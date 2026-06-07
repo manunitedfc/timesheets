@@ -1,0 +1,79 @@
+import type { Employee } from '@/types';
+
+export const employees: Employee[] = [
+  {
+    id: 'emp-001',
+    name: 'John Doe',
+    title: 'Software Engineer',
+    department: 'Development',
+    email: 'john.doe@expertgeophysics.com',
+    location: 'Toronto, ON',
+    weeklyHours: '40h 20m',
+    initials: 'JD',
+    status: 'active',
+  },
+  {
+    id: 'emp-002',
+    name: 'Jane Smith',
+    title: 'UI/UX Designer',
+    department: 'Design',
+    email: 'jane.smith@expertgeophysics.com',
+    location: 'Ottawa, ON',
+    weeklyHours: '38h 15m',
+    initials: 'JS',
+    status: 'active',
+  },
+  {
+    id: 'emp-003',
+    name: 'Mike Johnson',
+    title: 'QA Engineer',
+    department: 'QA / Testing',
+    email: 'mike.johnson@expertgeophysics.com',
+    location: 'Calgary, AB',
+    weeklyHours: '37h 30m',
+    initials: 'MJ',
+    status: 'active',
+  },
+  {
+    id: 'emp-004',
+    name: 'Sarah Williams',
+    title: 'Product Manager',
+    department: 'Management',
+    email: 'sarah.williams@expertgeophysics.com',
+    location: 'Vancouver, BC',
+    weeklyHours: '42h 00m',
+    initials: 'SW',
+    status: 'away',
+  },
+  {
+    id: 'emp-005',
+    name: 'David Brown',
+    title: 'DevOps Engineer',
+    department: 'Operations',
+    email: 'david.brown@expertgeophysics.com',
+    location: 'Halifax, NS',
+    weeklyHours: '40h 00m',
+    initials: 'DB',
+    status: 'active',
+  },
+  {
+    id: 'emp-006',
+    name: 'Emily Davis',
+    title: 'Geophysics Analyst',
+    department: 'Geophysics',
+    email: 'emily.davis@expertgeophysics.com',
+    location: 'Sudbury, ON',
+    weeklyHours: '39h 45m',
+    initials: 'ED',
+    status: 'active',
+  },
+];
+
+export const currentEmployee = employees[0];
+
+export const currentManager = {
+  id: 'mgr-001',
+  name: 'Robert Manager',
+  title: 'System Administrator',
+  initials: 'RM',
+};

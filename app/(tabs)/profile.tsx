@@ -1,0 +1,32 @@
+import { Platform, useWindowDimensions } from 'react-native';
+import { CalendarDays, Clock3, MapPin } from 'lucide-react-native';
+
+import { StatCard } from '@/components/dashboard/StatCard';
+import { ProfilePanel } from '@/components/profile/ProfilePanel';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { ScreenContainer } from '@/components/shared/ScreenContainer';
+import { Box } from '@/components/ui/box';
+import { currentEmployee } from '@/data/employees';
+
+export default function ProfileScreen() {
+  const { width } = useWindowDimensions();
+  const wide = Platform.OS === 'web' && width >= 1040;
+
+  return (
+    <ScreenContainer>
+      <PageHeader title="Profile" subtitle={Platform.OS === 'web' ? currentEmployee.email : undefined} />
+      <Box style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
+        <Box className="flex-[1.2]">
+          <ProfilePanel />
+        </Box>
+        {Platform.OS === 'web' ? (
+          <Box className="flex-1" style={{ gap: 16 }}>
+            <StatCard title="Weekly Hours" value="38h 45m" detail="of 40h" tone="green" icon={Clock3} progress={96} />
+            <StatCard title="Time Off Balance" value="15 days" detail="available" tone="green" icon={CalendarDays} />
+            <StatCard title="Location" value="Toronto" detail="Ontario, Canada" tone="blue" icon={MapPin} />
+          </Box>
+        ) : null}
+      </Box>
+    </ScreenContainer>
+  );
+}
