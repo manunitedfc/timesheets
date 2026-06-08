@@ -1,4 +1,4 @@
-import { ChevronRight, LogOut } from 'lucide-react-native';
+import { CalendarDays, ChevronRight, LogOut, Stethoscope } from 'lucide-react-native';
 
 import { AvatarInitials } from '@/components/shared/AvatarInitials';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
@@ -10,7 +10,7 @@ import { VStack } from '@/components/ui/vstack';
 import { t } from '@/constants/tokens';
 import { getCurrentEmployee } from '@/data/mockSelectors';
 
-const profileRows = ['Personal Information', 'Employment Details', 'Change Password', 'Settings'];
+const profileRows = ['Settings'];
 
 export function ProfilePanel() {
   const currentEmployee = getCurrentEmployee();
@@ -43,19 +43,29 @@ export function ProfilePanel() {
         </HStack>
       </VStack>
 
-      <Box className={`mt-5 rounded-lg p-4 ${t.bg.successSoft}`}>
-        <Text className={`font-bold ${t.text.success}`}>Employment Snapshot</Text>
-        <HStack className="mt-4 flex-wrap gap-4">
-          <Box className="min-w-[180px] flex-1">
-            <Text className={`text-sm ${t.text.success}`}>Department</Text>
-            <Text className={`mt-1 font-bold ${t.text.success}`}>{currentEmployee.department}</Text>
-          </Box>
-          <Box className="min-w-[180px] flex-1">
-            <Text className={`text-sm ${t.text.success}`}>Location</Text>
-            <Text className={`mt-1 font-bold ${t.text.success}`}>{currentEmployee.location}</Text>
-          </Box>
-        </HStack>
-      </Box>
+      <HStack className="mt-4 gap-3">
+        <Card size="md" variant="outline" className={`flex-1 p-4 ${t.card}`}>
+          <HStack className="items-center justify-between">
+            <Text className={`text-sm font-medium ${t.text.muted}`}>Time Off Balance</Text>
+            <Box className={`items-center justify-center rounded-xl p-2 ${t.bg.successSoft}`}>
+              <CalendarDays size={18} color="#16a34a" />
+            </Box>
+          </HStack>
+          <Text className={`mt-2 text-3xl font-bold ${t.text.primary}`}>15</Text>
+          <Text className={`text-sm ${t.text.muted}`}>days available</Text>
+        </Card>
+
+        <Card size="md" variant="outline" className={`flex-1 p-4 ${t.card}`}>
+          <HStack className="items-center justify-between">
+            <Text className={`text-sm font-medium ${t.text.muted}`}>Sick Days</Text>
+            <Box className={`items-center justify-center rounded-xl p-2 bg-blue-50 dark:bg-blue-950`}>
+              <Stethoscope size={18} color="#2563eb" />
+            </Box>
+          </HStack>
+          <Text className={`mt-2 text-3xl font-bold ${t.text.primary}`}>8</Text>
+          <Text className={`text-sm ${t.text.muted}`}>days available</Text>
+        </Card>
+      </HStack>
     </Card>
   );
 }
