@@ -8,11 +8,13 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { t } from '@/constants/tokens';
-import { currentEmployee } from '@/data/employees';
+import { getCurrentEmployee } from '@/data/mockSelectors';
 
 const profileRows = ['Personal Information', 'Employment Details', 'Change Password', 'Settings'];
 
 export function ProfilePanel() {
+  const currentEmployee = getCurrentEmployee();
+
   return (
     <Card size="md" variant="outline" className={`p-5 ${t.card}`}>
       <VStack className="items-center gap-3">

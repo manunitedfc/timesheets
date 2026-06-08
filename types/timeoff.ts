@@ -5,7 +5,6 @@ export type TimeOffType = 'Vacation' | 'Sick Leave' | 'Personal Day' | 'Training
 export type TimeOffRequest = {
   id: string;
   employeeId: string;
-  employeeName: string;
   type: TimeOffType;
   dateRange: string;
   duration: string;

@@ -6,9 +6,11 @@ import { ProfilePanel } from '@/components/profile/ProfilePanel';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { ScreenContainer } from '@/components/shared/ScreenContainer';
 import { Box } from '@/components/ui/box';
-import { currentEmployee } from '@/data/employees';
+import { getCurrentEmployee } from '@/data/mockSelectors';
 
 export default function ProfileScreen() {
+  const currentEmployee = getCurrentEmployee();
+
   return (
     <ScreenContainer>
       <PageHeader title="Profile" subtitle={Platform.OS === 'web' ? currentEmployee.email : undefined} />

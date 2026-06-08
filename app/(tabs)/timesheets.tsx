@@ -1,6 +1,6 @@
-import { ChevronRight, Copy, Trash2 } from 'lucide-react-native';
-import { useState } from 'react';
-import { Text as RNText, View } from 'react-native';
+import { ChevronRight, Copy, Send, Trash2 } from 'lucide-react-native';
+import { useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, Text as RNText, View } from 'react-native';
 
 import { PageHeader } from '@/components/shared/PageHeader';
 import { ScreenContainer } from '@/components/shared/ScreenContainer';
@@ -12,6 +12,7 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { t } from '@/constants/tokens';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTimesheet } from '@/hooks/use-timesheet';
 
 function formatFooterSavedLabel(date: Date | null): string {
@@ -27,7 +28,14 @@ function formatFooterSavedLabel(date: Date | null): string {
 
 export default function TimesheetsScreen() {
   const ts = useTimesheet();
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const [clearPending, setClearPending] = useState(false);
+
+  const totalHoursRaw = ts.totals.hours + ts.totals.otHours;
+  const th = Math.floor(totalHoursRaw);
+  const tm = Math.round((totalHoursRaw - th) * 60);
+  const totalHoursLabel = `${th}h ${String(tm).padStart(2, '0')}m`;
 
   const handleClearWeek = () => {
     if (clearPending) {
@@ -67,34 +75,32 @@ export default function TimesheetsScreen() {
     onUpdateEntry: ts.updateEntry,
   };
 
+  const mobileScrollRef = useRef<ScrollView>(null);
+  const mobileScrollOffsetY = useRef(0);
+
   const mobileViewProps = {
     entries: ts.entries,
-    totals: ts.totals,
     validationErrors: ts.validationErrors,
     isReadOnly: ts.isReadOnly,
-    status: ts.status,
-    lastSavedAt: ts.lastSavedAt,
+    scrollViewRef: mobileScrollRef,
+    scrollOffsetRef: mobileScrollOffsetY,
     onUpdateEntry: ts.updateEntry,
-    onCopyLastWeek: ts.copyLastWeek,
-    onClearWeek: ts.clearWeek,
-    onSubmit: () => ts.submitTimesheet((p) => console.log('submitted', p)),
   };
   const savedLabel = formatFooterSavedLabel(ts.lastSavedAt);
 
   return (
-    <ScreenContainer>
-      <PageHeader
-        title="Timesheets"
-        subtitle="Submit and manage your weekly timesheets"
-      />
-
+    <View style={{ flex: 1 }}>
       {/* ── Desktop layout (lg+) ─────────────────────────────────────────── */}
       <Box className="hidden flex-1 flex-col lg:flex">
-        {/* 1. Week traversal — above the card */}
-        <Box className={`overflow-hidden rounded-lg border ${t.border.default} ${t.bg.surface} shadow-sm`}>
-          <WeekNav {...weekNavProps} compact={false} />
-          <TimesheetDesktopView {...desktopViewProps} />
-        </Box>
+        <ScreenContainer>
+          <PageHeader
+            title="Timesheets"
+            subtitle="Submit and manage your weekly timesheets"
+          />
+          <Box className={`overflow-hidden rounded-lg border ${t.border.default} ${t.bg.surface} shadow-sm`}>
+            <WeekNav {...weekNavProps} compact={false} />
+            <TimesheetDesktopView {...desktopViewProps} />
+          </Box>
 
         {/* 3. Bottom footer card — totals left, submit right */}
         <View
@@ -198,13 +204,92 @@ export default function TimesheetsScreen() {
             )}
           </View>
         </View>
+        </ScreenContainer>
       </Box>
 
       {/* ── Mobile layout (< lg + native) ─────────────── */}
-      <Box className="flex lg:hidden flex-1 flex-col -mx-4 -mb-4">
-        <WeekNav {...weekNavProps} compact />
-        <TimesheetMobileView {...mobileViewProps} />
+      <Box className="flex lg:hidden flex-1 flex-col">
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+          <ScrollView
+            ref={mobileScrollRef}
+            className={t.bg.page}
+            contentContainerStyle={{ paddingBottom: 24, paddingTop: Platform.OS === 'web' ? 20 : 58 }}
+            onScroll={(e) => { mobileScrollOffsetY.current = e.nativeEvent.contentOffset.y; }}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+          >
+            <View style={{ paddingHorizontal: 20 }}>
+              <PageHeader title="Timesheets" subtitle="Submit and manage your weekly timesheets" />
+            </View>
+            <WeekNav {...weekNavProps} compact />
+            <TimesheetMobileView {...mobileViewProps} />
+          </ScrollView>
+
+        {/* ── Mobile fixed footer bar ─────────────────────── */}
+        <View
+          style={{
+            alignItems: 'center',
+            backgroundColor: isDark ? '#0f172a' : '#ffffff',
+            borderTopColor: isDark ? '#334155' : '#dbe3ec',
+            borderTopWidth: 1,
+            flexDirection: 'row',
+            height: 76,
+            paddingHorizontal: 20,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Total Hours</Text>
+            <Text numberOfLines={1} className={`text-xl font-bold ${isDark ? 'text-slate-50' : 'text-slate-900'}`}>
+              {totalHoursLabel}
+            </Text>
+          </View>
+
+          {!ts.isReadOnly ? (
+            <View style={{ alignItems: 'center', flexDirection: 'row', gap: 10 }}>
+              <Pressable
+                onPress={ts.copyLastWeek}
+                className="active:opacity-60"
+                style={{
+                  alignItems: 'center',
+                  borderColor: isDark ? '#334155' : '#dbe3ec',
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  flexDirection: 'row',
+                  gap: 6,
+                  paddingHorizontal: 14,
+                  paddingVertical: 11,
+                }}
+              >
+                <Copy size={15} color={isDark ? '#94a3b8' : '#475569'} />
+                <Text className={`text-sm font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>Copy Prev. Week</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => ts.submitTimesheet((p) => console.log('submitted', p))}
+                className="active:opacity-80"
+                style={{
+                  alignItems: 'center',
+                  backgroundColor: '#2563eb',
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  gap: 6,
+                  paddingHorizontal: 18,
+                  paddingVertical: 11,
+                }}
+              >
+                <Send size={15} color="#ffffff" />
+                <Text className="text-sm font-bold text-white">Submit</Text>
+              </Pressable>
+            </View>
+          ) : null}
+        </View>
+        </KeyboardAvoidingView>
       </Box>
-    </ScreenContainer>
+    </View>
   );
 }

@@ -1,13 +1,13 @@
 import type { Href } from 'expo-router';
 import { router, usePathname } from 'expo-router';
 import { BarChart3, CalendarDays, CheckSquare, FileText, Home, User, Users } from 'lucide-react-native';
-import { useColorScheme } from 'react-native';
 
 import { Box } from '@/components/ui/box';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { getNavigationItems, type NavigationIcon } from '@/constants/navigation';
 import { ACTIVE_ROLE } from '@/constants/roles';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const iconMap = {
   dashboard: Home,
@@ -26,7 +26,7 @@ const iconMap = {
  */
 export function MobileWebNav() {
   const pathname = usePathname();
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
   const isDark = colorScheme === 'dark';
   const items = getNavigationItems(ACTIVE_ROLE, 'mobile');
 

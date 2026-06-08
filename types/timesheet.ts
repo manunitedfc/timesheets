@@ -43,15 +43,20 @@ export type TimesheetValidationErrors = Record<string, Partial<Record<keyof Time
 export type Timesheet = {
   id: string;
   employeeId: string;
-  employeeName: string;
-  period: string;
-  totalHours: string;
+  weekStart: string;
+  weekEnd: string;
+  totalMinutes: number;
   status: TimesheetStatus;
 };
 
 export type ActivityEvent = {
   id: string;
-  message: string;
+  employeeId: string;
+  summary: string;
   time: string;
   tone: 'blue' | 'green' | 'orange' | 'purple';
+};
+
+export type ActivityFeedItem = ActivityEvent & {
+  message: string;
 };

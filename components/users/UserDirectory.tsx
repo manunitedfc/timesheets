@@ -8,9 +8,11 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { t } from '@/constants/tokens';
-import { employees } from '@/data/employees';
+import { getEmployees } from '@/data/mockSelectors';
 
 export function UserDirectory() {
+  const employees = getEmployees();
+
   return (
     <Card size="md" variant="outline" className={`p-4 lg:p-3 ${t.card}`}>
       <HStack className={`mb-3 h-9 items-center gap-3 rounded-lg border px-3 ${t.border.default} ${t.bg.elevated}`}>

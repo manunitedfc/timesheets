@@ -11,9 +11,11 @@ import { HStack } from '@/components/ui/hstack';
 import { Progress, ProgressFilledTrack } from '@/components/ui/progress';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { timeOffBalances, timeOffRequests } from '@/data/timeoff';
+import { getTimeOffBalances, getTimeOffRequests } from '@/data/mockSelectors';
 
 export default function TimeOffScreen() {
+  const timeOffBalances = getTimeOffBalances();
+  const timeOffRequests = getTimeOffRequests();
   const upcoming = timeOffRequests.filter((request) => request.timeframe === 'upcoming');
   const past = timeOffRequests.filter((request) => request.timeframe === 'past');
 

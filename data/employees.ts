@@ -68,12 +68,3 @@ export const employees: Employee[] = [
     status: 'active',
   },
 ];
-
-export const currentEmployee = employees[0];
-
-export const currentManager = {
-  id: 'mgr-001',
-  name: 'Robert Manager',
-  title: 'System Administrator',
-  initials: 'RM',
-};

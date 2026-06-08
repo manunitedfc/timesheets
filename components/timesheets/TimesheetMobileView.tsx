@@ -1,7 +1,8 @@
-import { CheckCircle2, ChevronDown, ChevronUp, Copy, Send, Trash2 } from 'lucide-react-native';
-import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react-native';
+import type { MutableRefObject, RefObject } from 'react';
+import { useRef, useState } from 'react';
 import {
+    ScrollView,
     Text as RNText,
     TextInput,
     View,
@@ -9,27 +10,19 @@ import {
 
 import { Pressable } from '@/components/ui/pressable';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import type { TimesheetEntryRow, TimesheetStatus, TimesheetValidationErrors } from '@/types';
-
-type TimesheetTotals = {
-  hours: number;
-  otHours: number;
-  vacation: number;
-  sick: number;
-  fieldHours: number;
-};
+import type { TimesheetEntryRow, TimesheetValidationErrors } from '@/types';
 
 type TimesheetMobileViewProps = {
   entries: TimesheetEntryRow[];
-  totals: TimesheetTotals;
   validationErrors: TimesheetValidationErrors;
   isReadOnly: boolean;
-  status: TimesheetStatus;
-  lastSavedAt: Date | null;
+  scrollViewRef?: RefObject<ScrollView | null>;
+  scrollOffsetRef?: MutableRefObject<number>;
   onUpdateEntry: (date: string, field: keyof TimesheetEntryRow, value: string | number) => void;
-  onCopyLastWeek: () => void;
-  onClearWeek: () => void;
-  onSubmit: () => void;
+};
+
+type Measurable = {
+  measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => void;
 };
 
 type FieldInputProps = {
@@ -85,17 +78,6 @@ function formatDayTotal(row: TimesheetEntryRow) {
   const hours = Math.floor(total);
   const minutes = Math.round((total - hours) * 60);
   return `${hours}h ${String(minutes).padStart(2, '0')}m`;
-}
-
-function formatSavedLabel(date: Date | null) {
-  if (!date) return 'Not saved yet';
-
-  const diff = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
-  if (diff < 10) return 'Auto-saved just now';
-  if (diff < 60) return `Auto-saved ${diff}s ago`;
-  if (diff < 3600) return `Auto-saved ${Math.floor(diff / 60)}m ago`;
-
-  return `Auto-saved at ${date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
 }
 
 function FieldInput({
@@ -280,67 +262,21 @@ function DayCard({ row, isOpen, isReadOnly, isDark, errors, numericDrafts, onDra
   );
 }
 
-function FooterButton({
-  children,
-  icon,
-  isDark,
-  tone = 'default',
-  flex = 1,
-  onPress,
-}: {
-  children: string;
-  icon: ReactNode;
-  isDark: boolean;
-  tone?: 'default' | 'primary' | 'danger';
-  flex?: number;
-  onPress: () => void;
-}) {
-  const isPrimary = tone === 'primary';
-  const isDanger = tone === 'danger';
-  const background = isPrimary ? '#2563eb' : isDanger ? (isDark ? '#3b0d0d' : '#fef2f2') : (isDark ? '#0f172a' : '#ffffff');
-  const textColor = isPrimary ? '#ffffff' : isDanger ? '#dc2626' : primary;
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        alignItems: 'center',
-        backgroundColor: background,
-        borderColor: isPrimary ? '#2563eb' : isDanger ? '#fca5a5' : (isDark ? '#334155' : border),
-        borderRadius: 8,
-        borderWidth: 1,
-        flex,
-        flexDirection: 'row',
-        gap: 8,
-        height: 48,
-        justifyContent: 'center',
-        paddingHorizontal: 10,
-      }}
-    >
-      {icon}
-      <RNText style={{ color: isPrimary ? '#ffffff' : (isDanger ? '#dc2626' : (isDark ? '#f8fafc' : textColor)), fontSize: 13, fontWeight: '700', lineHeight: 18 }}>
-        {children}
-      </RNText>
-    </Pressable>
-  );
-}
-
 export function TimesheetMobileView({
   entries,
-  totals,
   validationErrors,
   isReadOnly,
-  lastSavedAt,
+  scrollViewRef,
+  scrollOffsetRef,
   onUpdateEntry,
-  onCopyLastWeek,
-  onClearWeek,
-  onSubmit,
 }: TimesheetMobileViewProps) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === 'dark';
   const [openDate, setOpenDate] = useState<string | null>(entries[2]?.date ?? entries[0]?.date ?? null);
-  const [clearPending, setClearPending] = useState(false);
   const [numericDrafts, setNumericDrafts] = useState<Record<string, string>>({});
+  const cardRefs = useRef<Record<string, View | null>>({});
+  const localScrollOffsetY = useRef(0);
+  const scrollOffsetY = scrollOffsetRef ?? localScrollOffsetY;
 
   const handleDraftChange = (date: string, field: keyof TimesheetEntryRow, value?: string) => {
     const key = `${date}:${String(field)}`;
@@ -355,107 +291,43 @@ export function TimesheetMobileView({
     });
   };
 
-  const handleClear = () => {
-    if (clearPending) {
-      setClearPending(false);
-      onClearWeek();
-      return;
-    }
-
-    setClearPending(true);
-    setTimeout(() => setClearPending(false), 3000);
-  };
-
   return (
     <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-
-
       {entries.map((row) => (
-        <DayCard
+        <View
           key={row.date}
-          row={row}
-          isOpen={openDate === row.date}
-          isReadOnly={isReadOnly}
-          isDark={isDark}
-          errors={validationErrors[row.date] ?? {}}
-          numericDrafts={numericDrafts}
-          onDraftChange={handleDraftChange}
-          onToggle={() => setOpenDate((current) => (current === row.date ? null : row.date))}
-          onUpdate={onUpdateEntry}
-        />
+          collapsable={false}
+          ref={(r) => { cardRefs.current[row.date] = r; }}
+        >
+          <DayCard
+            row={row}
+            isOpen={openDate === row.date}
+            isReadOnly={isReadOnly}
+            isDark={isDark}
+            errors={validationErrors[row.date] ?? {}}
+            numericDrafts={numericDrafts}
+            onDraftChange={handleDraftChange}
+            onToggle={() => {
+              const next = openDate === row.date ? null : row.date;
+              setOpenDate(next);
+              if (next === null || !scrollViewRef?.current) return;
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  const cardRef = cardRefs.current[next];
+                  if (!cardRef || !scrollViewRef.current) return;
+                  cardRef.measureInWindow((cx, cy) => {
+                    (scrollViewRef.current as unknown as Measurable).measureInWindow((sx, sy) => {
+                      const target = scrollOffsetY.current + (cy - sy) - 100;
+                      scrollViewRef.current!.scrollTo({ y: Math.max(0, target), animated: true });
+                    });
+                  });
+                });
+              });
+            }}
+            onUpdate={onUpdateEntry}
+          />
+        </View>
       ))}
-
-      <View
-        style={{
-          backgroundColor: isDark ? '#0f172a' : '#ffffff',
-          borderColor: isDark ? '#334155' : border,
-          borderRadius: 8,
-          borderWidth: 1,
-          marginTop: 12,
-          padding: 16,
-          shadowColor: '#0f172a',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.04,
-          shadowRadius: 8,
-        }}
-      >
-        <View style={{ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 }}>
-          <RNText style={{ color: isDark ? '#f8fafc' : primary, fontSize: 18, fontWeight: '700', lineHeight: 24 }}>Weekly Totals</RNText>
-          <View style={{ alignItems: 'center', flexDirection: 'row', gap: 6 }}>
-            <RNText style={{ color: isDark ? '#94a3b8' : muted, fontSize: 12, fontWeight: '500', lineHeight: 17 }}>
-              {formatSavedLabel(lastSavedAt)}
-            </RNText>
-            <CheckCircle2 size={16} color="#10b981" />
-          </View>
-        </View>
-
-        <View style={{ flexDirection: 'row', marginBottom: 18 }}>
-          {[
-            { label: 'Hours', value: totals.hours },
-            { label: 'OT Hours', value: totals.otHours },
-            { label: 'Vacation', value: totals.vacation },
-            { label: 'Sick', value: totals.sick },
-            { label: 'Field', value: totals.fieldHours },
-          ].map((item, index) => (
-            <View
-              key={item.label}
-              style={{
-                alignItems: 'center',
-                borderLeftColor: isDark ? '#334155' : '#e2e8f0',
-                borderLeftWidth: index === 0 ? 0 : 1,
-                flex: 1,
-                minWidth: 0,
-              }}
-            >
-              <RNText style={{ color: isDark ? '#f8fafc' : primary, fontSize: 17, fontWeight: '700', lineHeight: 24 }}>
-                {item.value.toFixed(2)}
-              </RNText>
-              <RNText style={{ color: isDark ? '#94a3b8' : muted, fontSize: 12, lineHeight: 17, marginTop: 4 }}>
-                {item.label}
-              </RNText>
-            </View>
-          ))}
-        </View>
-
-        {!isReadOnly ? (
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <FooterButton isDark={isDark} icon={<Copy size={16} color={isDark ? '#cbd5e1' : '#334155'} />} onPress={onCopyLastWeek}>
-              Copy
-            </FooterButton>
-            <FooterButton
-              isDark={isDark}
-              icon={<Trash2 size={16} color={clearPending ? '#dc2626' : isDark ? '#cbd5e1' : '#334155'} />}
-              tone={clearPending ? 'danger' : 'default'}
-              onPress={handleClear}
-            >
-              {clearPending ? 'Confirm' : 'Clear'}
-            </FooterButton>
-            <FooterButton isDark={isDark} icon={<Send size={16} color="#ffffff" />} tone="primary" flex={1.35} onPress={onSubmit}>
-              Submit
-            </FooterButton>
-          </View>
-        ) : null}
-      </View>
     </View>
   );
 }

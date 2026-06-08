@@ -13,9 +13,6 @@ import {
 } from 'lucide-react-native';
 import { Platform } from 'react-native';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const logoSrc = require('@/assets/images/Company Logo Revised.png');
-
 import { AvatarInitials } from '@/components/shared/AvatarInitials';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
@@ -24,8 +21,10 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getNavigationItems, type NavigationIcon } from '@/constants/navigation';
 import { ACTIVE_ROLE } from '@/constants/roles';
-import { currentManager } from '@/data/employees';
+import { getCurrentManager } from '@/data/mockSelectors';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+
+const logoSrc = require('@/assets/images/Company Logo Revised.png');
 
 const iconMap = {
   dashboard: Home,
@@ -42,6 +41,7 @@ export function Sidebar() {
   const { colorScheme } = useColorScheme();
   const dark = colorScheme === 'dark';
   const items = getNavigationItems(ACTIVE_ROLE, 'web');
+  const currentManager = getCurrentManager();
 
   const iconColor = dark ? '#ffffff' : '#475569';
   const activeIconColor = '#ffffff';

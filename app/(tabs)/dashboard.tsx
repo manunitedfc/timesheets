@@ -11,15 +11,15 @@ import { ScreenContainer } from '@/components/shared/ScreenContainer';
 import { TimeOffList } from '@/components/timeoff/TimeOffList';
 import { WeeklyTimesheetCard } from '@/components/timesheets/WeeklyTimesheetCard';
 import { Box } from '@/components/ui/box';
-import { currentEmployee } from '@/data/employees';
-import { timeOffRequests } from '@/data/timeoff';
-import { recentActivity } from '@/data/timesheets';
+import { getActivityFeed, getCurrentEmployee, getTimeOffRequestsForEmployee } from '@/data/mockSelectors';
 
 export default function DashboardScreen() {
   return Platform.OS === 'web' ? <AdminDashboard /> : <EmployeeDashboard />;
 }
 
 function AdminDashboard() {
+  const recentActivity = getActivityFeed();
+
   return (
     <ScreenContainer>
       <PageHeader title="Dashboard" subtitle="Overview of timesheet activities" />
@@ -65,8 +65,10 @@ function AdminDashboard() {
 function EmployeeDashboard() {
   const { width } = useWindowDimensions();
   const twoColumns = width > 420;
-  const upcoming = timeOffRequests
-    .filter((request) => request.employeeId === 'emp-001' && request.timeframe === 'upcoming')
+  const currentEmployee = getCurrentEmployee();
+  const recentActivity = getActivityFeed();
+  const upcoming = getTimeOffRequestsForEmployee(currentEmployee.id)
+    .filter((request) => request.timeframe === 'upcoming')
     .slice(0, 2);
 
   return (

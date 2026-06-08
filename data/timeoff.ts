@@ -4,7 +4,6 @@ export const timeOffRequests: TimeOffRequest[] = [
   {
     id: 'pto-001',
     employeeId: 'emp-001',
-    employeeName: 'John Doe',
     type: 'Vacation',
     dateRange: 'May 5 - May 9, 2025',
     duration: '5 days',
@@ -14,7 +13,6 @@ export const timeOffRequests: TimeOffRequest[] = [
   {
     id: 'pto-002',
     employeeId: 'emp-001',
-    employeeName: 'John Doe',
     type: 'Sick Leave',
     dateRange: 'May 20, 2025',
     duration: '1 day',
@@ -24,7 +22,6 @@ export const timeOffRequests: TimeOffRequest[] = [
   {
     id: 'pto-003',
     employeeId: 'emp-001',
-    employeeName: 'John Doe',
     type: 'Personal Day',
     dateRange: 'Jun 2, 2025',
     duration: '1 day',
@@ -34,7 +31,6 @@ export const timeOffRequests: TimeOffRequest[] = [
   {
     id: 'pto-004',
     employeeId: 'emp-002',
-    employeeName: 'Jane Smith',
     type: 'Vacation',
     dateRange: 'May 5 - May 9, 2025',
     duration: '5 days',
@@ -44,7 +40,6 @@ export const timeOffRequests: TimeOffRequest[] = [
   {
     id: 'pto-005',
     employeeId: 'emp-001',
-    employeeName: 'John Doe',
     type: 'Vacation',
     dateRange: 'Apr 10 - Apr 12, 2025',
     duration: '3 days',

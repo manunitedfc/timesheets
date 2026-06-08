@@ -9,7 +9,7 @@ import { Progress, ProgressFilledTrack } from '@/components/ui/progress';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { t } from '@/constants/tokens';
-import { employeeWeek } from '@/data/timesheets';
+import { getEmployeeWeek } from '@/data/mockSelectors';
 
 type WeeklyTimesheetCardProps = {
   detailed?: boolean;
@@ -17,6 +17,7 @@ type WeeklyTimesheetCardProps = {
 
 export function WeeklyTimesheetCard({ detailed = false }: WeeklyTimesheetCardProps) {
   const mobileList = Platform.OS !== 'web' && detailed;
+  const employeeWeek = getEmployeeWeek();
 
   return (
     <Card size="md" variant="outline" className={`flex-1 p-4 lg:p-3 ${t.card}`}>

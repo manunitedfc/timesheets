@@ -8,10 +8,10 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { t } from '@/constants/tokens';
-import type { ActivityEvent } from '@/types';
+import type { ActivityFeedItem } from '@/types';
 
 type ActivityCardProps = {
-  activities: ActivityEvent[];
+  activities: ActivityFeedItem[];
   employeeMode?: boolean;
 };
 

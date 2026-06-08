@@ -8,13 +8,14 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { NAVIGATION_ITEMS } from '@/constants/navigation';
-import { currentManager } from '@/data/employees';
+import { getCurrentManager } from '@/data/mockSelectors';
 
 const titles = Object.fromEntries(NAVIGATION_ITEMS.map((item) => [item.href, item.label]));
 
 export function Header() {
   const pathname = usePathname();
   const title = titles[pathname] ?? 'Dashboard';
+  const currentManager = getCurrentManager();
 
   return (
     <HStack className="h-16 items-center justify-between border-b border-slate-200 bg-white px-6 dark:border-slate-700/60 dark:bg-slate-900">

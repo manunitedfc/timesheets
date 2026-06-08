@@ -10,14 +10,14 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { t } from '@/constants/tokens';
-import { approvals } from '@/data/approvals';
-import { employees } from '@/data/employees';
+import { getApprovalRows } from '@/data/mockSelectors';
 
 type ApprovalListProps = {
   compact?: boolean;
 };
 
 export function ApprovalList({ compact = false }: ApprovalListProps) {
+  const approvals = getApprovalRows();
   const visibleApprovals = compact ? approvals.slice(0, 3) : approvals;
 
   return (
@@ -29,36 +29,32 @@ export function ApprovalList({ compact = false }: ApprovalListProps) {
         </Text>
       </HStack>
       <VStack className="gap-3">
-        {visibleApprovals.map((approval) => {
-          const employee = employees.find((item) => item.id === approval.employeeId);
-
-          return (
-            <HStack key={approval.id} className="items-center gap-3">
-              <Avatar size="md" className="bg-blue-700">
-                <AvatarFallbackText>{employee?.initials ?? approval.employeeName.slice(0, 2)}</AvatarFallbackText>
-              </Avatar>
-              <Box className="min-w-0 flex-1">
-                <Text className={`font-bold ${t.text.primary}`}>{approval.employeeName}</Text>
-                <Text className={`mt-1 text-sm ${t.text.muted}`}>
-                  {approval.type} - {approval.period}
-                </Text>
-              </Box>
-              <Text className={`font-bold ${t.text.primary}`}>{approval.amount}</Text>
-              {compact ? (
-                <StatusBadge label={approval.type} tone={approval.type === 'Timesheet' ? 'blue' : 'green'} />
-              ) : (
-                <HStack className="gap-3">
-                  <Button action="positive" variant="solid" size="sm" className="bg-emerald-50">
-                    <ButtonText className="text-emerald-700">Approve</ButtonText>
-                  </Button>
-                  <Button action="negative" variant="solid" size="sm" className="bg-red-50">
-                    <ButtonText className="text-red-700">Reject</ButtonText>
-                  </Button>
-                </HStack>
-              )}
-            </HStack>
-          );
-        })}
+        {visibleApprovals.map((approval) => (
+          <HStack key={approval.id} className="items-center gap-3">
+            <Avatar size="md" className="bg-blue-700">
+              <AvatarFallbackText>{approval.initials}</AvatarFallbackText>
+            </Avatar>
+            <Box className="min-w-0 flex-1">
+              <Text className={`font-bold ${t.text.primary}`}>{approval.employeeName}</Text>
+              <Text className={`mt-1 text-sm ${t.text.muted}`}>
+                {approval.type} - {approval.period}
+              </Text>
+            </Box>
+            <Text className={`font-bold ${t.text.primary}`}>{approval.amount}</Text>
+            {compact ? (
+              <StatusBadge label={approval.type} tone={approval.type === 'Timesheet' ? 'blue' : 'green'} />
+            ) : (
+              <HStack className="gap-3">
+                <Button action="positive" variant="solid" size="sm" className="bg-emerald-50">
+                  <ButtonText className="text-emerald-700">Approve</ButtonText>
+                </Button>
+                <Button action="negative" variant="solid" size="sm" className="bg-red-50">
+                  <ButtonText className="text-red-700">Reject</ButtonText>
+                </Button>
+              </HStack>
+            )}
+          </HStack>
+        ))}
       </VStack>
     </Card>
   );
