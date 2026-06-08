@@ -1,5 +1,6 @@
-import type { ActivityEvent, Timesheet, TimesheetDay } from '@/types';
+import type { ActivityEvent, Timesheet, TimesheetDay, TimesheetEntryRow } from '@/types';
 
+/** Legacy — used by dashboard activity cards only */
 export const employeeWeek: TimesheetDay[] = [
   { day: 'Mon', date: 'Apr 21', hours: '8h 00m', project: 'Project Alpha', approved: true },
   { day: 'Tue', date: 'Apr 22', hours: '8h 00m', project: 'Project Alpha', approved: true },
@@ -10,6 +11,37 @@ export const employeeWeek: TimesheetDay[] = [
   { day: 'Sun', date: 'Apr 27', hours: '-', approved: false },
 ];
 
+/** Builds a blank 7-day week starting from a Monday ISO date */
+export function buildBlankWeek(weekStart: string): TimesheetEntryRow[] {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return days.map((day, i) => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    return {
+      date: d.toISOString().slice(0, 10),
+      day,
+      hours: 0,
+      otHours: 0,
+      vacation: 0,
+      sick: 0,
+      fieldHours: 0,
+      jobNumber: '',
+      details: '',
+    };
+  });
+}
+
+/** Seed data — realistic filled week for the current mock employee */
+export const mockWeekEntries: TimesheetEntryRow[] = [
+  { date: '2025-05-19', day: 'Mon', hours: 8, otHours: 0, vacation: 0, sick: 0, fieldHours: 8, jobNumber: '2456', details: 'Worked on project planning and client meeting' },
+  { date: '2025-05-20', day: 'Tue', hours: 8, otHours: 1, vacation: 0, sick: 0, fieldHours: 8, jobNumber: '2456', details: 'Data analysis and report preparation' },
+  { date: '2025-05-21', day: 'Wed', hours: 8, otHours: 0, vacation: 0, sick: 0, fieldHours: 8, jobNumber: '2456', details: 'System testing and bug fixes' },
+  { date: '2025-05-22', day: 'Thu', hours: 8, otHours: 0.5, vacation: 0, sick: 0, fieldHours: 8, jobNumber: '2456', details: 'Client follow-up and documentation' },
+  { date: '2025-05-23', day: 'Fri', hours: 8, otHours: 0, vacation: 0, sick: 0, fieldHours: 8, jobNumber: '2456', details: 'Code review and deployment' },
+  { date: '2025-05-24', day: 'Sat', hours: 0, otHours: 0, vacation: 0, sick: 0, fieldHours: 0, jobNumber: '', details: '' },
+  { date: '2025-05-25', day: 'Sun', hours: 0, otHours: 0, vacation: 0, sick: 0, fieldHours: 0, jobNumber: '', details: '' },
+];
+
 export const timesheets: Timesheet[] = [
   {
     id: 'ts-001',
@@ -17,7 +49,7 @@ export const timesheets: Timesheet[] = [
     employeeName: 'John Doe',
     period: 'Apr 21 - Apr 27, 2025',
     totalHours: '38h 45m',
-    status: 'pending',
+    status: 'submitted',
   },
   {
     id: 'ts-002',
@@ -33,7 +65,7 @@ export const timesheets: Timesheet[] = [
     employeeName: 'Mike Johnson',
     period: 'Apr 21 - Apr 27, 2025',
     totalHours: '37h 30m',
-    status: 'pending',
+    status: 'submitted',
   },
   {
     id: 'ts-004',

@@ -11,7 +11,10 @@ import {
     User,
     Users,
 } from 'lucide-react-native';
-import { useColorScheme } from 'react-native';
+import { Platform } from 'react-native';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const logoSrc = require('@/assets/images/Company Logo Revised.png');
 
 import { AvatarInitials } from '@/components/shared/AvatarInitials';
 import { Box } from '@/components/ui/box';
@@ -22,6 +25,7 @@ import { VStack } from '@/components/ui/vstack';
 import { getNavigationItems, type NavigationIcon } from '@/constants/navigation';
 import { ACTIVE_ROLE } from '@/constants/roles';
 import { currentManager } from '@/data/employees';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const iconMap = {
   dashboard: Home,
@@ -53,14 +57,23 @@ export function Sidebar() {
         </Box>
         {/* Full logo: visible at lg+ */}
         <Box className="hidden lg:flex w-full">
-          <Image
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            source={require('@/assets/images/Company Logo Revised.png')}
-            style={{ width: '100%', height: 44 }}
-            contentFit="contain"
-            contentPosition="center"
-            cachePolicy="memory"
-          />
+          {Platform.OS === 'web' ? (
+            // Plain <img> on web: browser renders it natively before React mounts,
+            // so it never disappears on refresh.
+            <img
+              src={logoSrc}
+              style={{ width: '100%', height: 44, objectFit: 'contain' }}
+              alt="Company Logo"
+            />
+          ) : (
+            <Image
+              source={logoSrc}
+              style={{ width: '100%', height: 44 }}
+              contentFit="contain"
+              contentPosition="center"
+              cachePolicy="memory"
+            />
+          )}
         </Box>
       </Box>
       <VStack className="flex-1 justify-between py-4">

@@ -26,7 +26,7 @@ const iconMap = {
  */
 export function MobileWebNav() {
   const pathname = usePathname();
-  const { colorScheme } = useColorScheme();
+  const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const items = getNavigationItems(ACTIVE_ROLE, 'mobile');
 
