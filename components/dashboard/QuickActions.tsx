@@ -1,12 +1,12 @@
 import type { LucideIcon } from 'lucide-react-native';
 import {
-  BarChart3,
-  CalendarDays,
-  CalendarPlus,
-  Download,
-  FileBarChart2,
-  FilePlus,
-  UserPlus,
+    BarChart3,
+    CalendarDays,
+    CalendarPlus,
+    Download,
+    FileBarChart2,
+    FilePlus,
+    UserPlus,
 } from 'lucide-react-native';
 
 import { Box } from '@/components/ui/box';

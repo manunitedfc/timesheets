@@ -1,5 +1,5 @@
-import { Platform } from 'react-native';
 import { CalendarDays, Clock3, MapPin } from 'lucide-react-native';
+import { Platform } from 'react-native';
 
 import { StatCard } from '@/components/dashboard/StatCard';
 import { ProfilePanel } from '@/components/profile/ProfilePanel';
