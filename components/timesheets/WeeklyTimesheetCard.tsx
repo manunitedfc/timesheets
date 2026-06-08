@@ -1,5 +1,5 @@
 import { CheckCircle2, Plus } from 'lucide-react-native';
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform } from 'react-native';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -16,8 +16,7 @@ type WeeklyTimesheetCardProps = {
 };
 
 export function WeeklyTimesheetCard({ detailed = false }: WeeklyTimesheetCardProps) {
-  const { width } = useWindowDimensions();
-  const mobileList = Platform.OS !== 'web' && (detailed || width < 420);
+  const mobileList = Platform.OS !== 'web' && detailed;
 
   return (
     <Card size="md" variant="outline" className={`flex-1 p-4 lg:p-3 ${t.card}`}>

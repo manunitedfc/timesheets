@@ -1,5 +1,5 @@
 import { CheckCircle2, Clock3, FileText } from 'lucide-react-native';
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform } from 'react-native';
 
 import { StatCard } from '@/components/dashboard/StatCard';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -11,9 +11,6 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 
 export default function TimesheetsScreen() {
-  const { width } = useWindowDimensions();
-  const wide = Platform.OS === 'web' && width >= 1040;
-
   return (
     <ScreenContainer>
       <PageHeader
@@ -30,13 +27,13 @@ export default function TimesheetsScreen() {
           </Box>
         </HStack>
       ) : (
-        <Box className="mb-4" style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
+        <Box className="mb-4 flex-col lg:flex-row gap-4">
           <StatCard title="Pending Review" value="3" detail="timesheets" tone="orange" icon={FileText} />
           <StatCard title="Approved" value="18" detail="this week" tone="green" icon={CheckCircle2} />
           <StatCard title="Average Hours" value="39h 10m" detail="per employee" tone="blue" icon={Clock3} />
         </Box>
       )}
-      <Box style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
+      <Box className="flex-col lg:flex-row gap-4">
         <WeeklyTimesheetCard detailed={Platform.OS !== 'web'} />
         {Platform.OS === 'web' ? <TimesheetTable /> : null}
       </Box>

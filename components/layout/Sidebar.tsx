@@ -11,7 +11,7 @@ import {
     User,
     Users,
 } from 'lucide-react-native';
-import { useColorScheme, useWindowDimensions } from 'react-native';
+import { useColorScheme } from 'react-native';
 
 import { AvatarInitials } from '@/components/shared/AvatarInitials';
 import { Box } from '@/components/ui/box';
@@ -35,39 +35,36 @@ const iconMap = {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { width } = useWindowDimensions();
   const { colorScheme } = useColorScheme();
   const dark = colorScheme === 'dark';
   const items = getNavigationItems(ACTIVE_ROLE, 'web');
-  const collapsed = width < 1024;
 
   const iconColor = dark ? '#ffffff' : '#475569';
   const activeIconColor = '#ffffff';
 
   return (
-    <Box
-      className={`h-full justify-between border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 ${collapsed ? 'w-14' : 'w-56'}`}
-    >
-      {/* Logo row — same height as Header (h-14) */}
-      <Box
-        className={`h-16 items-center justify-center ${collapsed ? 'px-2' : 'px-3'}`}
-      >
-        {collapsed ? (
-          <Box className="h-9 w-9 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/15">
-            <Clock3 size={20} color={dark ? '#ffffff' : '#2563eb'} />
-          </Box>
-        ) : (
+    // w-14 below lg breakpoint, w-56 at lg+ — CSS decides, zero JS measurement
+    <Box className="h-full w-14 lg:w-56 justify-between border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900">
+      {/* Logo row */}
+      <Box className="h-16 items-center justify-center px-2 lg:px-3">
+        {/* Icon-only: visible below lg */}
+        <Box className="flex lg:hidden h-9 w-9 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/15">
+          <Clock3 size={20} color={dark ? '#ffffff' : '#2563eb'} />
+        </Box>
+        {/* Full logo: visible at lg+ */}
+        <Box className="hidden lg:flex w-full">
           <Image
             // eslint-disable-next-line @typescript-eslint/no-require-imports
             source={require('@/assets/images/Company Logo Revised.png')}
             style={{ width: '100%', height: 44 }}
             contentFit="contain"
             contentPosition="center"
+            cachePolicy="memory"
           />
-        )}
+        </Box>
       </Box>
       <VStack className="flex-1 justify-between py-4">
-        <VStack className={`gap-0.5 pt-3 ${collapsed ? 'px-2' : 'px-3'}`}>
+        <VStack className="gap-0.5 pt-3 px-2 lg:px-3">
           {items.map((item) => {
             const Icon = iconMap[item.icon];
             const active = pathname === item.href || (pathname === '/' && item.href === '/dashboard');
@@ -76,32 +73,34 @@ export function Sidebar() {
               <Pressable
                 key={item.href}
                 onPress={() => router.push(item.href as Href)}
-                className={`rounded-lg ${collapsed ? 'items-center px-2 py-2.5' : 'px-3 py-2'} ${active ? 'bg-blue-600' : 'hover:bg-slate-100 dark:hover:bg-white/10'}`}
+                className={`rounded-lg items-center px-2 py-2.5 lg:px-3 lg:py-2 ${active ? 'bg-blue-600' : 'hover:bg-slate-100 dark:hover:bg-white/10'}`}
               >
-                {collapsed ? (
+                {/* Icon only: visible below lg */}
+                <Box className="flex lg:hidden">
                   <Icon size={18} color={active ? activeIconColor : iconColor} />
-                ) : (
-                  <HStack className="items-center gap-3">
-                    <Icon size={17} color={active ? activeIconColor : iconColor} />
-                    <Text className={`text-sm font-semibold ${active ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`}>{item.label}</Text>
-                  </HStack>
-                )}
+                </Box>
+                {/* Icon + label: visible at lg+ */}
+                <HStack className="hidden lg:flex items-center gap-3">
+                  <Icon size={17} color={active ? activeIconColor : iconColor} />
+                  <Text className={`text-sm font-semibold ${active ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`}>{item.label}</Text>
+                </HStack>
               </Pressable>
             );
           })}
         </VStack>
-        <Box className={`border-t border-slate-200 dark:border-slate-700/50 pt-4 ${collapsed ? 'items-center px-2' : 'px-3'}`}>
-          {collapsed ? (
+        <Box className="border-t border-slate-200 dark:border-slate-700/50 pt-4 items-center px-2 lg:px-3">
+          {/* Icon-only avatar: visible below lg */}
+          <Box className="flex lg:hidden">
             <AvatarInitials initials={currentManager.initials} size="sm" tone="admin" />
-          ) : (
-            <HStack className="items-center gap-3">
-              <AvatarInitials initials={currentManager.initials} tone="admin" />
-              <Box className="min-w-0 flex-1">
-                <Text className="font-bold text-slate-800 dark:text-white">{currentManager.name}</Text>
-                <Text className="text-sm text-slate-500 dark:text-slate-400">{currentManager.title}</Text>
-              </Box>
-            </HStack>
-          )}
+          </Box>
+          {/* Full user row: visible at lg+ */}
+          <HStack className="hidden lg:flex items-center gap-3">
+            <AvatarInitials initials={currentManager.initials} tone="admin" />
+            <Box className="min-w-0 flex-1">
+              <Text className="font-bold text-slate-800 dark:text-white">{currentManager.name}</Text>
+              <Text className="text-sm text-slate-500 dark:text-slate-400">{currentManager.title}</Text>
+            </Box>
+          </HStack>
         </Box>
       </VStack>
     </Box>

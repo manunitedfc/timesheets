@@ -1,5 +1,5 @@
 import { CalendarCheck2, Clock3, Plane } from 'lucide-react-native';
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform } from 'react-native';
 
 import { StatCard } from '@/components/dashboard/StatCard';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -14,8 +14,6 @@ import { VStack } from '@/components/ui/vstack';
 import { timeOffBalances, timeOffRequests } from '@/data/timeoff';
 
 export default function TimeOffScreen() {
-  const { width } = useWindowDimensions();
-  const wide = Platform.OS === 'web' && width >= 1040;
   const upcoming = timeOffRequests.filter((request) => request.timeframe === 'upcoming');
   const past = timeOffRequests.filter((request) => request.timeframe === 'past');
 
@@ -35,13 +33,13 @@ export default function TimeOffScreen() {
           </Box>
         </HStack>
       ) : (
-        <Box className="mb-4" style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
+        <Box className="mb-4 flex-col lg:flex-row gap-4">
           <StatCard title="Time Off Balance" value="15 days" detail="available" tone="green" icon={CalendarCheck2} />
           <StatCard title="Pending Requests" value="9" detail="teamwide" tone="orange" icon={Clock3} />
           <StatCard title="Upcoming Vacation" value="5 days" detail="May 5 - May 9" tone="purple" icon={Plane} />
         </Box>
       )}
-      <Box style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
+      <Box className="flex-col lg:flex-row gap-4">
         <TimeOffList title="Upcoming" requests={upcoming} showViewAll />
         <TimeOffList title="Past" requests={past} showViewAll />
         {Platform.OS === 'web' ? (

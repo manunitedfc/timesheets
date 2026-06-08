@@ -1,5 +1,5 @@
 import { CalendarCheck2, Clock3, FileText, Timer, UsersRound } from 'lucide-react-native';
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native'; // useWindowDimensions kept for EmployeeDashboard (native only)
 
 import { ActivityCard } from '@/components/dashboard/ActivityCard';
 import { ApprovalList } from '@/components/dashboard/ApprovalList';
@@ -20,13 +20,10 @@ export default function DashboardScreen() {
 }
 
 function AdminDashboard() {
-  const { width } = useWindowDimensions();
-  const wide = width >= 1120;
-
   return (
     <ScreenContainer>
       <PageHeader title="Dashboard" subtitle="Overview of timesheet activities" />
-      <Box style={{ flexDirection: wide ? 'row' : 'column', flexWrap: 'wrap', gap: 16 }}>
+      <Box className="flex-col lg:flex-row flex-wrap gap-4">
         <StatCard
           title="Total Hours This Week"
           value="1,248h 30m"
@@ -52,12 +49,12 @@ function AdminDashboard() {
         <StatCard title="Active Users" value="56" trend="+4 from last week" tone="green" icon={UsersRound} />
       </Box>
 
-      <Box className="mt-4" style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
+      <Box className="mt-4 flex-col lg:flex-row gap-4">
         <ApprovalList compact />
         <HoursChart />
       </Box>
 
-      <Box className="mt-4" style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
+      <Box className="mt-4 flex-col lg:flex-row gap-4">
         <ActivityCard activities={recentActivity} />
         <QuickActions />
       </Box>

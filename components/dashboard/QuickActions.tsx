@@ -1,5 +1,13 @@
-import { BarChart3, CalendarDays, Download, Plus, UserPlus } from 'lucide-react-native';
-import { Platform, useWindowDimensions } from 'react-native';
+import type { LucideIcon } from 'lucide-react-native';
+import {
+  BarChart3,
+  CalendarDays,
+  CalendarPlus,
+  Download,
+  FileBarChart2,
+  FilePlus,
+  UserPlus,
+} from 'lucide-react-native';
 
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
@@ -10,51 +18,60 @@ import { COLORS } from '@/constants/colors';
 import { ACTIVE_ROLE, hasAdminAccess } from '@/constants/roles';
 import { t } from '@/constants/tokens';
 
-const adminActions = [
-  { label: 'Add Timesheet', icon: Plus },
-  { label: 'Add Time Off', icon: Plus },
+type Action = { label: string; icon: LucideIcon };
+
+const adminActions: Action[] = [
+  { label: 'Add Timesheet', icon: FilePlus },
+  { label: 'Add Time Off', icon: CalendarPlus },
   { label: 'Add User', icon: UserPlus },
-  { label: 'Generate Report', icon: BarChart3 },
+  { label: 'Generate Report', icon: FileBarChart2 },
   { label: 'View Reports', icon: BarChart3 },
   { label: 'Export Data', icon: Download },
 ];
 
-const employeeActions = [
-  { label: 'Add Timesheet', icon: Plus },
-  { label: 'Request Time Off', icon: Plus },
+const employeeActions: Action[] = [
+  { label: 'Add Timesheet', icon: FilePlus },
+  { label: 'Request Time Off', icon: CalendarPlus },
   { label: 'View Calendar', icon: CalendarDays },
   { label: 'View Reports', icon: BarChart3 },
 ];
 
 export function QuickActions() {
-  const { width } = useWindowDimensions();
   const isAdmin = hasAdminAccess(ACTIVE_ROLE);
   const primary = isAdmin ? COLORS.admin.primary : COLORS.employee.primary;
   const actions = isAdmin ? adminActions : employeeActions;
-  const twoColumns = Platform.OS === 'web' || width > 420;
+
+  // Split into two columns manually so each item stays on one line
+  const left = actions.filter((_, i) => i % 2 === 0);
+  const right = actions.filter((_, i) => i % 2 !== 0);
+
+  const renderAction = (action: Action) => {
+    const Icon = action.icon;
+    return (
+      <Pressable
+        key={action.label}
+        className={`flex-row items-center gap-2.5 rounded-lg px-3 py-2 active:opacity-70 ${t.bg.elevated}`}
+      >
+        <Box
+          className="items-center justify-center rounded-md"
+          style={{ width: 32, height: 32, backgroundColor: `${primary}18` }}
+        >
+          <Icon size={16} color={primary} strokeWidth={2} />
+        </Box>
+        <Text className={`text-sm font-medium ${t.text.primary}`}>{action.label}</Text>
+      </Pressable>
+    );
+  };
 
   return (
-    <Card size="md" variant="outline" className={`flex-1 p-4 lg:p-3 ${t.card}`}>
-      <Text className={`mb-3 text-base font-bold ${t.text.primary}`}>Quick Actions</Text>
-      <Box style={{ flexDirection: twoColumns ? 'row' : 'column', flexWrap: 'wrap', gap: 8 }}>
-        {actions.map((action) => {
-          const Icon = action.icon;
-
-          return (
-            <Pressable
-              key={action.label}
-              className={`h-11 flex-1 basis-[44%] items-center justify-center rounded-lg border ${t.border.strong} ${t.bg.elevated}`}
-            >
-              <HStack className="items-center justify-center gap-3">
-                <Icon size={21} color={primary} />
-                <Text className="font-bold" style={{ color: primary }}>
-                  {action.label}
-                </Text>
-              </HStack>
-            </Pressable>
-          );
-        })}
-      </Box>
+    <Card size="md" variant="outline" className={`flex-1 p-4 ${t.card}`}>
+      <Text className={`mb-3 text-sm font-semibold uppercase tracking-wider ${t.text.secondary}`}>
+        Quick Actions
+      </Text>
+      <HStack className="gap-2">
+        <Box className="flex-1 gap-1.5">{left.map(renderAction)}</Box>
+        <Box className="flex-1 gap-1.5">{right.map(renderAction)}</Box>
+      </HStack>
     </Card>
   );
 }

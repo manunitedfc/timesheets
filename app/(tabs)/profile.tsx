@@ -1,4 +1,4 @@
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform } from 'react-native';
 import { CalendarDays, Clock3, MapPin } from 'lucide-react-native';
 
 import { StatCard } from '@/components/dashboard/StatCard';
@@ -9,13 +9,10 @@ import { Box } from '@/components/ui/box';
 import { currentEmployee } from '@/data/employees';
 
 export default function ProfileScreen() {
-  const { width } = useWindowDimensions();
-  const wide = Platform.OS === 'web' && width >= 1040;
-
   return (
     <ScreenContainer>
       <PageHeader title="Profile" subtitle={Platform.OS === 'web' ? currentEmployee.email : undefined} />
-      <Box style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
+      <Box className="flex-col lg:flex-row gap-4">
         <Box className="flex-[1.2]">
           <ProfilePanel />
         </Box>
