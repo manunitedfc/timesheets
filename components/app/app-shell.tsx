@@ -55,8 +55,7 @@ function MobileHeader() {
     <View className="border-b border-slate-200 bg-white px-4 py-4">
       <View className="flex-row items-center justify-between">
         <View>
-          <Text className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">Northwind Ops</Text>
-          <Text className="mt-1 text-xl font-semibold text-slate-950">Workforce Hub</Text>
+          <Text className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">Expert Geophysics</Text>
         </View>
         <View className="h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50">
           <Menu size={18} color="#0f172a" />
@@ -69,8 +68,7 @@ function MobileHeader() {
 function DesktopSidebar() {
   return (
     <View className="hidden w-[224px] self-stretch border-r border-slate-200 bg-[#0f172a] px-4 py-5 xl:w-[240px] xl:px-5 xl:py-6 2xl:w-[280px] lg:flex">
-      <Text className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">Northwind Ops</Text>
-      <Text className="mt-2 text-xl font-semibold text-white xl:text-2xl">Workforce Hub</Text>
+      <Text className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">Expert Geophysics</Text>
       <Text className="mt-2 text-xs leading-5 text-slate-400 xl:text-sm xl:leading-6">
         Enterprise timesheets, approvals, and staffing visibility in one workspace.
       </Text>
@@ -111,15 +109,26 @@ function DesktopHeader() {
 }
 
 function MobileBottomNav() {
+  const pathname = usePathname();
   return (
-    <View className="border-t border-slate-200 bg-white px-2 pb-4 pt-2">
+    <View className="border-t border-slate-200 bg-white px-2 pb-6 pt-2">
       <View className="flex-row justify-between gap-1">
-        {mobileNavItems.map((item) => (
-          <View key={item.href} className="flex-1">
-            <NavButton item={item} compact />
-            <Text className="mt-1 text-center text-[11px] font-medium text-slate-500">{item.label}</Text>
-          </View>
-        ))}
+        {mobileNavItems.map((item) => {
+          const active = isActivePath(pathname, item.href);
+          const Icon = iconMap[item.icon];
+          return (
+            <Pressable
+              key={item.href}
+              accessibilityRole="button"
+              onPress={() => router.replace(item.href)}
+              className={`flex-1 items-center rounded-2xl py-2 ${active ? 'bg-slate-950' : ''}`}>
+              <Icon color={active ? '#F8FAFC' : '#475569'} size={20} />
+              <Text className={`mt-1 text-center text-[11px] font-medium ${active ? 'text-slate-50' : 'text-slate-500'}`}>
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -127,7 +136,7 @@ function MobileBottomNav() {
 
 export function AppShell() {
   return (
-    <SafeAreaView className="flex-1 bg-slate-100" edges={['top', 'right', 'left']}>
+    <SafeAreaView className="flex-1 bg-slate-100" edges={['top', 'right', 'left', 'bottom']}>
       <View className="flex-1 lg:flex-row">
         <DesktopSidebar />
 

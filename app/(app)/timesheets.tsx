@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Clock3, Copy, Ellipsis, Plane, Trash2, Upload } from 'lucide-react-native';
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Clock3, Copy, Plane, Trash2 } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
@@ -17,6 +17,48 @@ function GhostButton({ label, icon, wide = false }: { label: string; icon?: Reac
   );
 }
 
+// ── Week navigation helpers ──────────────────────────────────────────────────
+
+function getWeekMonday(offset: number): Date {
+  const today = new Date();
+  const dow = today.getDay(); // 0 = Sun
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) + offset * 7);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+function formatWeekRange(monday: Date): string {
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return `${fmt(monday)} – ${fmt(sunday)}, ${sunday.getFullYear()}`;
+}
+
+function buildWeekDays(monday: Date, weekOffset: number) {
+  const SHORTS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const KEYS   = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  return SHORTS.map((short, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const mock = weekOffset === 0 ? mobileTimesheetDays[i] : null;
+    return {
+      key:         KEYS[i],
+      short,
+      date,
+      total:       mock?.total       ?? '0h 00m',
+      hours:       mock?.hours       ?? '0.00',
+      overtime:    mock?.overtime    ?? '0.00',
+      vacation:    mock?.vacation    ?? '0.00',
+      sick:        mock?.sick        ?? '0.00',
+      field:       mock?.field       ?? '0.00',
+      job:         mock?.job         ?? '',
+      description: mock?.description ?? '',
+    };
+  });
+}
+
 function PrimaryButton({ label, icon, wide = false }: { label: string; icon?: React.ReactNode; wide?: boolean }) {
   return (
     <View className={`flex-row items-center justify-center gap-2.5 rounded-2xl bg-[#1764ff] px-4 py-3 xl:px-5 xl:py-3.5 ${wide ? 'flex-1' : ''}`}>
@@ -29,117 +71,114 @@ function PrimaryButton({ label, icon, wide = false }: { label: string; icon?: Re
 function MobileTimesheets({
   openDay,
   setOpenDay,
+  weekOffset,
+  onChangeWeek,
 }: {
   openDay: string;
   setOpenDay: (value: string) => void;
+  weekOffset: number;
+  onChangeWeek: (delta: number) => void;
 }) {
+  const monday = getWeekMonday(weekOffset);
+  const weekRange = formatWeekRange(monday);
+  const days = buildWeekDays(monday, weekOffset);
+
   return (
     <View className="flex-1 lg:hidden">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-4 pb-64 pt-6"
+        contentContainerClassName="px-4 pb-24 pt-4"
         showsVerticalScrollIndicator={false}>
-        <View className="flex-row items-start justify-between gap-4">
-          <View className="flex-1">
-            <Text className="text-[42px] font-semibold tracking-tight text-slate-950">Timesheets</Text>
-            <Text className="mt-2 text-[18px] leading-8 text-slate-500">Submit and manage your weekly timesheets</Text>
-          </View>
-          <View className="h-16 w-16 items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-sm shadow-slate-200">
-            <Ellipsis size={26} color="#0f172a" />
-          </View>
-        </View>
 
-        <SectionCard className="mt-8 p-5">
-          <View className="flex-row items-center justify-between gap-3">
-            <View className="h-20 w-20 items-center justify-center rounded-[22px] border border-slate-200 bg-white">
-              <ChevronLeft size={28} color="#0f172a" />
+        <SectionCard className="p-4">
+          <View className="flex-row items-center justify-between gap-2">
+            <Pressable
+              onPress={() => onChangeWeek(-1)}
+              className="h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white">
+              <ChevronLeft size={20} color="#0f172a" />
+            </Pressable>
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-center text-base font-semibold text-slate-950">
+                {weekRange}
+              </Text>
+              {weekOffset === 0 && (
+                <Text className="absolute -top-4 w-full text-center text-xs text-slate-500">
+                  Current Week
+                </Text>
+              )}
             </View>
-            <View className="flex-1 items-center">
-              <CalendarDays size={40} color="#1764ff" />
-              <Text className="mt-3 text-xl text-slate-500">{timesheetWeek.label}</Text>
-              <Text className="mt-1 text-[30px] font-semibold text-slate-950">{timesheetWeek.range}</Text>
-              <View className="mt-4 flex-row items-center gap-3">
-                <View className="rounded-full bg-amber-100 px-4 py-2">
-                  <Text className="text-base font-medium text-amber-700">{timesheetWeek.status}</Text>
-                </View>
-                <Text className="text-lg text-slate-400">|</Text>
-                <Text className="text-lg text-slate-500">{timesheetWeek.lastSaved}</Text>
-                <Text className="text-lg text-slate-400">|</Text>
-                <View className="flex-row items-center gap-2">
-                  <Upload size={18} color="#22c55e" />
-                  <Text className="text-lg text-slate-500">{timesheetWeek.autosave}</Text>
-                </View>
-              </View>
-            </View>
-            <View className="h-20 w-20 items-center justify-center rounded-[22px] border border-slate-200 bg-white">
-              <ChevronRight size={28} color="#0f172a" />
-            </View>
+            <Pressable
+              onPress={() => onChangeWeek(1)}
+              className="h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white">
+              <ChevronRight size={20} color="#0f172a" />
+            </Pressable>
           </View>
         </SectionCard>
 
-        <View className="mt-6 gap-4">
-          {mobileTimesheetDays.map((day) => {
+        <View className="mt-4 gap-3">
+          {days.map((day) => {
             const expanded = openDay === day.key;
+            const isEmpty = day.hours === '0.00';
+            const isWeekend = day.key === 'sat' || day.key === 'sun';
             return (
               <SectionCard key={day.key} className="overflow-hidden">
                 <Pressable
                   onPress={() => setOpenDay(expanded ? '' : day.key)}
-                  className="flex-row items-center justify-between px-6 py-6">
-                  <Text className={`text-[24px] ${day.hours === '0.00' ? 'text-slate-400' : 'text-slate-950'} font-semibold`}>
-                    {day.short}, <Text className={`${day.hours === '0.00' ? 'text-slate-400' : 'text-slate-500'} font-normal`}>{day.date}</Text>
+                  className="flex-row items-center justify-between px-4 py-4">
+                  <Text className={`text-base font-semibold ${isWeekend ? 'text-slate-400' : 'text-slate-950'}`}>
+                    {day.short},{' '}
+                    <Text className={`font-normal ${isWeekend ? 'text-slate-400' : 'text-slate-500'}`}>{day.date}</Text>
                   </Text>
-                  <View className="flex-row items-center gap-5">
-                    <Text className={`text-[24px] font-semibold ${day.hours === '0.00' ? 'text-slate-400' : 'text-slate-950'}`}>{day.total}</Text>
-                    <ChevronDown size={24} color="#64748b" />
+                  <View className="flex-row items-center gap-3">
+                    <Text className={`text-base font-semibold ${isWeekend ? 'text-slate-400' : 'text-slate-950'}`}>{day.total}</Text>
+                    <ChevronDown size={18} color="#64748b" />
                   </View>
                 </Pressable>
-                {expanded ? (
-                  <View className="border-t border-slate-100 px-6 pb-6 pt-5">
-                    <Text className="text-sm font-medium uppercase tracking-[0.18em] text-slate-400">Project</Text>
-                    <Text className="mt-2 text-base font-medium text-slate-900">{day.project}</Text>
-                    <View className="mt-5 flex-row gap-4">
-                      <View className="flex-1">
-                        <Text className="text-sm font-medium uppercase tracking-[0.18em] text-slate-400">Hours</Text>
-                        <View className="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                          <Text className="text-lg font-medium text-slate-900">{day.hours}</Text>
+                {expanded && (
+                  <View className="border-t border-slate-100 px-4 pb-5 pt-4">
+                    <View className="flex-row flex-wrap gap-3">
+                      {(
+                        [
+                          { label: 'Hours',    value: day.hours },
+                          { label: 'OT Hours', value: day.overtime },
+                          { label: 'Vacation', value: day.vacation },
+                          { label: 'Sick',     value: day.sick },
+                          { label: 'Field',    value: day.field },
+                          { label: 'Job #',    value: day.job },
+                        ] as { label: string; value: string }[]
+                      ).map(({ label, value }) => (
+                        <View key={label} className="min-w-[28%] flex-1">
+                          <Text className="text-xs font-medium uppercase tracking-[0.12em] text-slate-400">{label}</Text>
+                          <View className="mt-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                            <Text className="text-sm font-medium text-slate-900">{value || '—'}</Text>
+                          </View>
                         </View>
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-sm font-medium uppercase tracking-[0.18em] text-slate-400">OT Hours</Text>
-                        <View className="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                          <Text className="text-lg font-medium text-slate-900">{day.overtime}</Text>
-                        </View>
-                      </View>
+                      ))}
                     </View>
-                    <Text className="mt-5 text-sm font-medium uppercase tracking-[0.18em] text-slate-400">Notes</Text>
-                    <View className="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                      <Text className="text-base leading-7 text-slate-600">{day.notes}</Text>
+                    <Text className="mt-4 text-xs font-medium uppercase tracking-[0.12em] text-slate-400">Description</Text>
+                    <View className="mt-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                      <Text className="text-sm leading-5 text-slate-600">{day.description || '—'}</Text>
                     </View>
                   </View>
-                ) : null}
+                )}
               </SectionCard>
             );
           })}
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0">
-        <SectionCard className="rounded-b-none rounded-t-[32px] border-b-0 px-6 py-5">
-          <View className="flex-row items-center gap-5">
-            <View className="h-20 w-20 items-center justify-center rounded-full bg-blue-50">
-              <Clock3 size={34} color="#163b7a" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-lg text-slate-500">Total Hours</Text>
-              <Text className="mt-1 text-[30px] font-semibold text-slate-950">{timesheetTotals.mobileTotal}</Text>
-            </View>
+      <View className="absolute bottom-0 left-0 right-0 border-t border-slate-200 bg-white px-4 py-3">
+        <View className="flex-row items-center gap-3">
+          <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50">
+            <Clock3 size={20} color="#163b7a" />
           </View>
-          <View className="my-5 h-px bg-slate-100" />
-          <View className="flex-row gap-4">
-            <GhostButton label="Copy Prev. Week" icon={<Copy size={24} color="#1764ff" />} wide />
-            <PrimaryButton label="Submit" icon={<Plane size={24} color="#fff" />} wide />
+          <View className="mr-1">
+            <Text className="text-xs text-slate-500">Total Hours</Text>
+            <Text className="text-base font-semibold text-slate-950">{timesheetTotals.mobileTotal}</Text>
           </View>
-        </SectionCard>
+          <GhostButton label="Copy Prev." icon={<Copy size={15} color="#1764ff" />} wide />
+          <PrimaryButton label="Submit" icon={<Plane size={15} color="#fff" />} wide />
+        </View>
       </View>
     </View>
   );
@@ -267,11 +306,17 @@ function DesktopTimesheets() {
 }
 
 export default function TimesheetsScreen() {
-  const [openDay, setOpenDay] = useState('mon');
+  const [openDay, setOpenDay] = useState('');
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  function changeWeek(delta: number) {
+    setWeekOffset((w) => w + delta);
+    setOpenDay('');
+  }
 
   return (
     <View className="flex-1 bg-slate-100">
-      <MobileTimesheets openDay={openDay} setOpenDay={setOpenDay} />
+      <MobileTimesheets openDay={openDay} setOpenDay={setOpenDay} weekOffset={weekOffset} onChangeWeek={changeWeek} />
       <DesktopTimesheets />
     </View>
   );
