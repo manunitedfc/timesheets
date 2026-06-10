@@ -111,7 +111,7 @@ function DesktopHeader() {
 function MobileBottomNav() {
   const pathname = usePathname();
   return (
-    <View className="border-t border-slate-200 bg-white px-2 pb-6 pt-2">
+    <View className="border-t border-slate-200 bg-white px-2 pb-2 pt-2">
       <View className="flex-row justify-between gap-1">
         {mobileNavItems.map((item) => {
           const active = isActivePath(pathname, item.href);
@@ -135,13 +135,16 @@ function MobileBottomNav() {
 }
 
 export function AppShell() {
+  const pathname = usePathname();
+  const isTimesheetsRoute = isActivePath(pathname, '/timesheets');
+
   return (
-    <SafeAreaView className="flex-1 bg-slate-100" edges={['top', 'right', 'left', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-white" edges={['top', 'right', 'left', 'bottom']}>
       <View className="flex-1 lg:flex-row">
         <DesktopSidebar />
 
         <View className="flex-1">
-          <View className="flex lg:hidden">
+          <View className={`lg:hidden ${isTimesheetsRoute ? 'hidden' : 'flex'}`}>
             <MobileHeader />
           </View>
           <View className="hidden lg:flex">
