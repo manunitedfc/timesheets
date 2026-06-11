@@ -1,51 +1,27 @@
-import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, Copy, Plane, Trash2, X } from 'lucide-react-native';
+import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, Copy, Plane, Trash2 } from 'lucide-react-native';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { desktopTimesheetGrid, mobileTimesheetDays, timesheetTotals } from '@/components/app/mock-data';
+import { SectionCard } from '@/components/timesheets/section-card';
+import { WeekPickerModal } from '@/components/timesheets/week-picker-modal';
+import {
+  addMonths,
+  formatWeekRange,
+  getIsoWeekNumber,
+  getMonthStart,
+  getWeekMonday,
+} from '@/lib/timesheets/date-utils';
+import {
+  formatMinutesToTimeLabel,
+  getDayStatus,
+  getStatusMeta,
+  parseTimeLabelToMinutes,
+} from '@/lib/timesheets/status-utils';
+import type { DayStatus, TimesheetDay } from '@/types/timesheets';
 
-function SectionCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <View className={`rounded-[24px] border border-slate-200 bg-white shadow-sm shadow-slate-200 xl:rounded-[28px] ${className}`}>{children}</View>;
-}
-
-type DayData = ReturnType<typeof buildWeekDays>[number];
-
-type DayStatus = 'completed' | 'draft' | 'not-started';
-
-function parseTimeLabelToMinutes(value: string): number {
-  const match = value.match(/(\d+)h\s*(\d+)m/i);
-  if (!match) {
-    return 0;
-  }
-
-  return Number(match[1]) * 60 + Number(match[2]);
-}
-
-function formatMinutesToTimeLabel(totalMinutes: number): string {
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return `${hours}h ${String(minutes).padStart(2, '0')}m`;
-}
-
-function getDayStatus(day: DayData): DayStatus {
-  if (parseTimeLabelToMinutes(day.total) === 0) {
-    return 'not-started';
-  }
-
-  return day.key === 'fri' ? 'draft' : 'completed';
-}
-
-function getStatusMeta(status: DayStatus) {
-  if (status === 'completed') {
-    return { label: 'Completed', dot: '#059669', textColor: '#020617', pillBg: '#ecfdf5', pillText: '#047857' };
-  }
-
-  if (status === 'draft') {
-    return { label: 'Draft', dot: '#f59e0b', textColor: '#020617', pillBg: '#eff6ff', pillText: '#1764ff' };
-  }
-
-  return { label: 'Not started', dot: '#94a3b8', textColor: '#64748b', pillBg: '#f1f5f9', pillText: '#64748b' };
-}
+type DayData = TimesheetDay;
 
 function DayStatusDot({ color }: { color: string }) {
   return <View className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />;
@@ -61,126 +37,7 @@ function getFullDayLabel(short: string) {
   return 'Sunday';
 }
 
-function WeekPickerModal({
-  visible,
-  onClose,
-  weekOffset,
-  pickerMonth,
-  onChangeMonth,
-  onSetPickerMonth,
-  onSelectWeek,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  weekOffset: number;
-  pickerMonth: Date;
-  onChangeMonth: (delta: number) => void;
-  onSetPickerMonth: (date: Date) => void;
-  onSelectWeek: (offset: number) => void;
-}) {
-  const weekOptions = getWeeksForMonth(pickerMonth);
-  const pickerYear = pickerMonth.getFullYear();
-  const pickerMonthIndex = pickerMonth.getMonth();
-  const yearOptions = Array.from({ length: 5 }, (_, index) => pickerYear - 2 + index);
-  const monthOptions = Array.from({ length: 12 }, (_, index) => ({
-    value: index,
-    label: getMonthName(index),
-  }));
-
-  return (
-    <Modal animationType="fade" transparent visible={visible} onRequestClose={onClose}>
-      <View className="flex-1 items-center justify-center px-6">
-        <Pressable className="absolute inset-0 bg-slate-950/30" onPress={onClose} />
-        <View className="w-full max-w-[440px] rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm shadow-slate-300">
-          <View className="flex-row items-start justify-between gap-4">
-            <View className="min-w-0 flex-1">
-              <Text className="text-lg font-semibold text-slate-950">Choose Week</Text>
-              <Text className="mt-1 text-sm text-slate-500">Select a weekly date range</Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Close week picker"
-              onPress={onClose}
-              className="h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white">
-              <X size={18} color="#0f172a" />
-            </Pressable>
-          </View>
-          <View className="mt-5 flex-row items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Previous month"
-              onPress={() => onChangeMonth(-1)}
-              className="h-10 w-10 items-center justify-center rounded-xl bg-white">
-              <ChevronLeft size={18} color="#0f172a" />
-            </Pressable>
-            <Text className="text-base font-semibold text-slate-900">{getMonthLabel(pickerMonth)}</Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Next month"
-              onPress={() => onChangeMonth(1)}
-              className="h-10 w-10 items-center justify-center rounded-xl bg-white">
-              <ChevronRight size={18} color="#0f172a" />
-            </Pressable>
-          </View>
-          <View className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Year</Text>
-              <Text className="text-sm font-medium text-slate-500">Jump faster</Text>
-            </View>
-            <View className="mt-3 flex-row gap-2">
-              {yearOptions.map((year) => {
-                const active = year === pickerYear;
-                return (
-                  <Pressable
-                    key={year}
-                    accessibilityRole="button"
-                    onPress={() => onSetPickerMonth(new Date(year, pickerMonthIndex, 1))}
-                    className={`flex-1 rounded-xl border px-2 py-2.5 ${active ? 'border-[#1764ff] bg-blue-50' : 'border-slate-200 bg-white'}`}>
-                    <Text className={`text-center text-sm font-semibold ${active ? 'text-[#1764ff]' : 'text-slate-700'}`}>{year}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <Text className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Month</Text>
-            <View className="mt-3 flex-row flex-wrap gap-2">
-              {monthOptions.map((month) => {
-                const active = month.value === pickerMonthIndex;
-                return (
-                  <Pressable
-                    key={month.value}
-                    accessibilityRole="button"
-                    onPress={() => onSetPickerMonth(new Date(pickerYear, month.value, 1))}
-                    className={`min-w-[62px] rounded-xl border px-3 py-2 ${active ? 'border-[#1764ff] bg-blue-50' : 'border-slate-200 bg-white'}`}>
-                    <Text className={`text-center text-sm font-semibold ${active ? 'text-[#1764ff]' : 'text-slate-700'}`}>{month.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-          <ScrollView className="mt-5 max-h-[320px]" showsVerticalScrollIndicator={false}>
-            <View className="gap-2">
-              {weekOptions.map((option) => {
-                const active = option.offset === weekOffset;
-                return (
-                  <Pressable
-                    key={option.offset}
-                    accessibilityRole="button"
-                    onPress={() => onSelectWeek(option.offset)}
-                    className={`rounded-2xl border px-4 py-3 ${active ? 'border-[#1764ff] bg-blue-50' : 'border-slate-200 bg-white'}`}>
-                    <Text className={`text-sm font-semibold ${active ? 'text-[#1764ff]' : 'text-slate-900'}`}>{option.label}</Text>
-                    <Text className={`mt-1 text-sm ${active ? 'text-[#1764ff]' : 'text-slate-500'}`}>{option.range}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-function GhostButton({ label, icon, wide = false }: { label: string; icon?: React.ReactNode; wide?: boolean }) {
+function GhostButton({ label, icon, wide = false }: { label: string; icon?: ReactNode; wide?: boolean }) {
   return (
     <View className={`flex-row items-center justify-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-4 py-3 xl:px-5 xl:py-3.5 ${wide ? 'flex-1' : ''}`}>
       {icon}
@@ -189,79 +46,9 @@ function GhostButton({ label, icon, wide = false }: { label: string; icon?: Reac
   );
 }
 
-// Week navigation helpers
-
-function getWeekMonday(offset: number): Date {
-  const today = new Date();
-  const dow = today.getDay(); // 0 = Sun
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) + offset * 7);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
-}
-
-function formatWeekRange(monday: Date): string {
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  return `${fmt(monday)} - ${fmt(sunday)}, ${sunday.getFullYear()}`;
-}
-
-function getMonthLabel(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-}
-
-function getMonthName(monthIndex: number): string {
-  return new Date(2026, monthIndex, 1).toLocaleDateString('en-US', { month: 'short' });
-}
-
-function getMonthStart(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-function addMonths(date: Date, delta: number): Date {
-  return new Date(date.getFullYear(), date.getMonth() + delta, 1);
-}
-
-function getWeekOffsetFromMonday(monday: Date): number {
-  return Math.round((monday.getTime() - getWeekMonday(0).getTime()) / 604800000);
-}
-
-function getWeeksForMonth(date: Date) {
-  const monthStart = getMonthStart(date);
-  const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-  const firstWeekMonday = new Date(monthStart);
-  const startDow = firstWeekMonday.getDay();
-  firstWeekMonday.setDate(firstWeekMonday.getDate() - (startDow === 0 ? 6 : startDow - 1));
-  firstWeekMonday.setHours(0, 0, 0, 0);
-  const weeks: { offset: number; label: string; range: string }[] = [];
-
-  for (let cursor = new Date(firstWeekMonday); cursor <= monthEnd || weeks.length === 0; cursor.setDate(cursor.getDate() + 7)) {
-    const monday = new Date(cursor);
-    weeks.push({
-      offset: getWeekOffsetFromMonday(monday),
-      label: `Week ${getIsoWeekNumber(monday)}`,
-      range: formatWeekRange(monday),
-    });
-  }
-
-  return weeks;
-}
-
-function getIsoWeekNumber(date: Date): number {
-  const target = new Date(date);
-  target.setHours(0, 0, 0, 0);
-  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7));
-
-  const firstThursday = new Date(target.getFullYear(), 0, 4);
-  firstThursday.setDate(firstThursday.getDate() + 3 - ((firstThursday.getDay() + 6) % 7));
-
-  return 1 + Math.round((target.getTime() - firstThursday.getTime()) / 604800000);
-}
-
 function buildWeekDays(monday: Date, weekOffset: number) {
   const SHORTS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const KEYS   = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  const KEYS: DayData['key'][] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   return SHORTS.map((short, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
@@ -285,7 +72,7 @@ function buildWeekDays(monday: Date, weekOffset: number) {
   });
 }
 
-function PrimaryButton({ label, icon, wide = false }: { label: string; icon?: React.ReactNode; wide?: boolean }) {
+function PrimaryButton({ label, icon, wide = false }: { label: string; icon?: ReactNode; wide?: boolean }) {
   return (
     <View className={`flex-row items-center justify-center gap-2.5 rounded-2xl bg-[#1764ff] px-4 py-3 xl:px-5 xl:py-3.5 ${wide ? 'flex-1' : ''}`}>
       {icon}
@@ -666,15 +453,15 @@ function DesktopTimesheets({
   weekOffset: number;
   onChangeWeek: (delta: number) => void;
 }) {
-  const topRowFieldMeta = [
+  const topRowFieldMeta: { key: 'hours' | 'overtime'; label: string; sublabel?: string }[] = [
     { key: 'hours', label: 'Hours' },
     { key: 'overtime', label: 'Overtime' },
-  ] as const;
-  const bottomRowFieldMeta = [
+  ];
+  const bottomRowFieldMeta: { key: 'vacation' | 'sick' | 'job'; label: string; sublabel?: string }[] = [
     { key: 'vacation', label: 'Vacation' },
     { key: 'sick', label: 'Sick' },
     { key: 'job', label: 'Job #' },
-  ] as const;
+  ];
   const monday = getWeekMonday(weekOffset);
   const weekRange = formatWeekRange(monday);
   const weekNumber = getIsoWeekNumber(monday);
