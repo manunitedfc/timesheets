@@ -6,7 +6,6 @@ import {
   Clock3,
   LayoutDashboard,
   Menu,
-  Search,
   UserRound,
   Users,
 } from 'lucide-react-native';
@@ -80,28 +79,18 @@ function DesktopSidebar() {
       </View>
 
       <View className="mt-auto rounded-3xl border border-slate-800 bg-slate-900/80 p-3 xl:p-4">
-        <Text className="text-sm font-medium text-white">Quarter close</Text>
-        <Text className="mt-2 text-xs leading-5 text-slate-400 xl:text-sm xl:leading-6">
-          Payroll export is due Friday. Keep approvals under 24 hours to stay on track.
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-function DesktopHeader() {
-  return (
-    <View className="flex-row items-center justify-between border-b border-slate-200 bg-white px-6 py-3 xl:px-8 xl:py-4">
-      <View className="w-full max-w-sm flex-row items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 xl:max-w-md">
-        <Search size={18} color="#64748b" />
-        <Text className="text-sm text-slate-400">Search timesheets, people, reports</Text>
-      </View>
-      <View className="flex-row items-center gap-3">
-        <View className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <Text className="text-sm font-medium text-slate-700">Current cycle: Jun 3 - Jun 9</Text>
-        </View>
-        <View className="rounded-2xl bg-slate-950 px-4 py-3">
-          <Text className="text-sm font-medium text-slate-50">Thomas Carter</Text>
+        <View className="flex-row items-center gap-3">
+          <View className="h-12 w-12 items-center justify-center rounded-full bg-[#1764ff]">
+            <Text className="text-base font-semibold text-white">TC</Text>
+          </View>
+          <View className="min-w-0 flex-1">
+            <Text numberOfLines={1} className="text-sm font-semibold text-white xl:text-[15px]">
+              Thomas Carter
+            </Text>
+            <Text numberOfLines={1} className="mt-1 text-xs text-slate-400 xl:text-sm">
+              Senior Field Engineer
+            </Text>
+          </View>
         </View>
       </View>
     </View>
@@ -146,9 +135,6 @@ export function AppShell() {
         <View className="flex-1">
           <View className={`lg:hidden ${isTimesheetsRoute ? 'hidden' : 'flex'}`}>
             <MobileHeader />
-          </View>
-          <View className="hidden lg:flex">
-            <DesktopHeader />
           </View>
           <Slot />
           <View className="flex lg:hidden">
