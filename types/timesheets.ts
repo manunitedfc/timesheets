@@ -4,12 +4,24 @@ export type DayStatus = 'completed' | 'draft' | 'not-started';
 
 export type TimesheetDayField = 'hours' | 'overtime' | 'vacation' | 'sick' | 'field' | 'job' | 'description';
 
+export type TimesheetWeekStatus = 'draft' | 'submitted';
+
 export type DayStatusMeta = {
   label: string;
   dot: string;
   textColor: string;
   pillBg: string;
   pillText: string;
+};
+
+export type TimesheetDayEntry = {
+  hours: string;
+  overtime: string;
+  vacation: string;
+  sick: string;
+  field: string;
+  job: string;
+  description: string;
 };
 
 export type TimesheetDay = {
@@ -19,25 +31,14 @@ export type TimesheetDay = {
   mobile: {
     date: string;
     numericDate: string;
-    total: string;
-    hours: string;
-    overtime: string;
-    vacation: string;
-    sick: string;
-    field: string;
-    job: string;
-    description: string;
   };
   desktop: {
     date: string;
-    total: string;
-    hours: string;
-    overtime: string;
-    vacation: string;
-    sick: string;
-    field: string;
-    job: string;
-    description: string;
+  };
+  entry: TimesheetDayEntry;
+  totals: {
+    mobile: string;
+    desktop: string;
   };
 };
 
@@ -54,6 +55,7 @@ export type TimesheetWeek = {
   weekOffset: number;
   weekNumber: number;
   range: string;
+  status: TimesheetWeekStatus;
   days: TimesheetDay[];
   totals: TimesheetTotals;
 };

@@ -1,4 +1,4 @@
-import type { DayStatus, DayStatusMeta, TimesheetDay } from '@/types/timesheets';
+import type { DayStatus, DayStatusMeta, TimesheetDay, TimesheetWeekStatus } from '@/types/timesheets';
 
 export function parseTimeLabelToMinutes(value: string): number {
   const match = value.match(/(\d+)h\s*(\d+)m/i);
@@ -15,9 +15,13 @@ export function formatMinutesToTimeLabel(totalMinutes: number): string {
   return `${hours}h ${String(minutes).padStart(2, '0')}m`;
 }
 
-export function getDayStatus(day: TimesheetDay): DayStatus {
-  if (parseTimeLabelToMinutes(day.total) === 0) {
+export function getDayStatus(day: TimesheetDay, weekStatus: TimesheetWeekStatus = 'draft'): DayStatus {
+  if (parseTimeLabelToMinutes(day.totals.mobile) === 0) {
     return 'not-started';
+  }
+
+  if (weekStatus === 'submitted') {
+    return 'completed';
   }
 
   return day.key === 'fri' ? 'draft' : 'completed';

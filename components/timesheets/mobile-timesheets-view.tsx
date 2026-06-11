@@ -11,6 +11,10 @@ function DayStatusDot({ color }: { color: string }) {
   return <View className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />;
 }
 
+function getNumericDisplayValue(value: string) {
+  return value === '' || value === '0' || value === '0.00' ? '' : value;
+}
+
 function FormField({
   label,
   value,
@@ -29,10 +33,10 @@ function FormField({
       <View className={wide ? '' : 'px-1.5'}>
         <Text className="text-sm font-semibold text-slate-700">{label}</Text>
         <TextInput
-          value={numeric ? (value === '0.00' ? '' : value) : value}
+          value={numeric ? getNumericDisplayValue(value) : value}
           onChangeText={onChangeText}
           inputMode={numeric ? 'decimal' : 'text'}
-          keyboardType={numeric ? 'decimal-pad' : 'default'}
+          keyboardType={numeric ? 'numeric' : 'default'}
           placeholder={numeric ? '0' : ''}
           placeholderTextColor="#94a3b8"
           returnKeyType="done"
@@ -98,10 +102,12 @@ function MobileWeekHeader({
 
 function MobileDayCards({
   days,
+  weekStatus,
   selectedDayIndex,
   onSelectDay,
 }: {
   days: DayData[];
+  weekStatus: TimesheetWeek['status'];
   selectedDayIndex: number;
   onSelectDay: (index: number) => void;
 }) {
@@ -109,7 +115,7 @@ function MobileDayCards({
     <View className="border-b border-slate-200 bg-white px-3 pb-2 pt-1">
       <View className="flex-row">
         {days.map((day, index) => {
-          const statusMeta = getStatusMeta(getDayStatus(day.mobile));
+          const statusMeta = getStatusMeta(getDayStatus(day, weekStatus));
           const active = selectedDayIndex === index;
           return (
             <Pressable
@@ -146,32 +152,32 @@ function MobileDayCards({
 
 function MobileSelectedDayForm({
   day,
+  weekStatus,
   onUpdateDayField,
   onToggleFieldWork,
 }: {
   day: DayData;
+  weekStatus: TimesheetWeek['status'];
   onUpdateDayField: (dayKey: DayData['key'], field: TimesheetDayField, value: string) => void;
   onToggleFieldWork: (dayKey: DayData['key']) => void;
 }) {
-  const mobileDay = day.mobile;
-  const fieldWorked = Number(mobileDay.field) > 0;
+  const fieldWorked = Number(day.entry.field) > 0;
+  const statusMeta = getStatusMeta(getDayStatus(day, weekStatus));
 
   return (
     <SectionCard className="p-4">
       <View className="flex-row items-center justify-between gap-3">
         <Text className="min-w-0 flex-1 text-[22px] font-semibold tracking-tight text-slate-950">
-          {day.full}, {mobileDay.date}
+          {day.full}, {day.mobile.date}
         </Text>
-        <View className="rounded-full px-3 py-1.5" style={{ backgroundColor: getStatusMeta(getDayStatus(mobileDay)).pillBg }}>
-          <Text className="text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: getStatusMeta(getDayStatus(mobileDay)).pillText }}>
-            {getStatusMeta(getDayStatus(mobileDay)).label}
-          </Text>
+        <View className="rounded-full px-3 py-1.5" style={{ backgroundColor: statusMeta.pillBg }}>
+          <Text className="text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: statusMeta.pillText }}>{statusMeta.label}</Text>
         </View>
       </View>
 
       <View className="-mx-1.5 mt-6 flex-row flex-wrap">
-        <FormField label="Hours" value={mobileDay.hours} onChangeText={(value) => onUpdateDayField(day.key, 'hours', value)} />
-        <FormField label="Overtime" value={mobileDay.overtime} onChangeText={(value) => onUpdateDayField(day.key, 'overtime', value)} />
+        <FormField label="Hours" value={day.entry.hours} onChangeText={(value) => onUpdateDayField(day.key, 'hours', value)} />
+        <FormField label="Overtime" value={day.entry.overtime} onChangeText={(value) => onUpdateDayField(day.key, 'overtime', value)} />
         <View className="w-1/2 min-w-0 px-1.5">
           <Text className="text-sm font-semibold text-slate-700">Field</Text>
           <Pressable
@@ -192,13 +198,13 @@ function MobileSelectedDayForm({
             </Text>
           </Pressable>
         </View>
-        <FormField label="Vacation" value={mobileDay.vacation} onChangeText={(value) => onUpdateDayField(day.key, 'vacation', value)} />
-        <FormField label="Sick" value={mobileDay.sick} onChangeText={(value) => onUpdateDayField(day.key, 'sick', value)} />
-        <FormField label="Job #" value={mobileDay.job} numeric={false} onChangeText={(value) => onUpdateDayField(day.key, 'job', value)} />
+        <FormField label="Vacation" value={day.entry.vacation} onChangeText={(value) => onUpdateDayField(day.key, 'vacation', value)} />
+        <FormField label="Sick" value={day.entry.sick} onChangeText={(value) => onUpdateDayField(day.key, 'sick', value)} />
+        <FormField label="Job #" value={day.entry.job} numeric={false} onChangeText={(value) => onUpdateDayField(day.key, 'job', value)} />
         <View className="w-full px-1.5 pt-1">
           <Text className="text-sm font-semibold text-slate-700">What did you work on?</Text>
           <TextInput
-            value={mobileDay.description}
+            value={day.entry.description}
             onChangeText={(value) => onUpdateDayField(day.key, 'description', value)}
             multiline
             placeholder="What did you work on?"
@@ -248,6 +254,7 @@ export function MobileTimesheetsView({
 
         <MobileDayCards
           days={days}
+          weekStatus={week.status}
           selectedDayIndex={selectedDayIndex}
           onSelectDay={(index) => {
             const nextDay = days[index];
@@ -266,7 +273,12 @@ export function MobileTimesheetsView({
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}>
             {selectedDay ? (
-              <MobileSelectedDayForm day={selectedDay} onUpdateDayField={onUpdateDayField} onToggleFieldWork={onToggleFieldWork} />
+              <MobileSelectedDayForm
+                day={selectedDay}
+                weekStatus={week.status}
+                onUpdateDayField={onUpdateDayField}
+                onToggleFieldWork={onToggleFieldWork}
+              />
             ) : null}
           </ScrollView>
         </View>

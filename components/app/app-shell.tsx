@@ -129,10 +129,10 @@ export function AppShell() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'right', 'left', 'bottom']}>
-      <View className="flex-1 lg:flex-row">
+      <View className="min-h-0 flex-1 lg:flex-row">
         <DesktopSidebar />
 
-        <View className="flex-1">
+        <View className="min-h-0 flex-1">
           <View className={`lg:hidden ${isTimesheetsRoute ? 'hidden' : 'flex'}`}>
             <MobileHeader />
           </View>
