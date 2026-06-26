@@ -9,8 +9,8 @@ export default function UsersScreen() {
       title="Users"
       description="User administration belongs in the larger desktop workspace, where access, department data, and office assignment can be audited clearly."
       actions={
-        <View className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-          <Text className="text-sm font-medium text-slate-700">Invite user</Text>
+        <View className="rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+          <Text className="text-sm font-medium text-slate-700 dark:text-slate-100">Invite user</Text>
         </View>
       }>
       <Card eyebrow="Directory" title="People and access">

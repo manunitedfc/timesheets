@@ -200,7 +200,6 @@ export const timesheetTotals = {
   overtime: '1.50',
   vacation: '0.00',
   sick: '0.00',
-  field: '40.00',
   mobileTotal: '36h 00m',
 };
 

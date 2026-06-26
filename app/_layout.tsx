@@ -3,25 +3,28 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
+import { WebSplashScreen } from '@/components/app/web-splash-screen';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import '@/global.css';
+import { initializeColorScheme, useAppColorScheme } from '@/lib/theme/color-scheme';
+
+initializeColorScheme();
 
 export const unstable_settings = {
   anchor: '(app)',
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const resolvedColorScheme = useAppColorScheme();
 
   return (
-    <GluestackUIProvider mode="light">
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <GluestackUIProvider mode={resolvedColorScheme}>
+      <ThemeProvider value={resolvedColorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(app)" />
         </Stack>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        <WebSplashScreen />
+        <StatusBar style={resolvedColorScheme === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>
     </GluestackUIProvider>
   );

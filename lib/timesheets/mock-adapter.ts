@@ -1,6 +1,6 @@
 import { desktopTimesheetGrid, mobileTimesheetDays } from '@/components/app/mock-data';
 import { formatWeekRange, getIsoWeekNumber } from '@/lib/timesheets/date-utils';
-import { createEmptyEntry, syncTimesheetWeek } from '@/lib/timesheets/week-state';
+import { createEmptyEntry, parseDecimal, syncTimesheetWeek } from '@/lib/timesheets/week-state';
 import type { TimesheetDay, TimesheetDayEntry, TimesheetDayKey, TimesheetWeek } from '@/types/timesheets';
 
 const DAY_KEYS: TimesheetDayKey[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
@@ -18,7 +18,7 @@ function createEntryFromMobileDay(index: number): TimesheetDayEntry {
     overtime: day.overtime,
     vacation: day.vacation,
     sick: day.sick,
-    field: day.field,
+    field: parseDecimal(day.field) > 0,
     job: day.job,
     description: day.description,
   };
@@ -35,7 +35,7 @@ function createEntryFromDesktopRow(index: number): TimesheetDayEntry {
     overtime: row.overtime,
     vacation: row.vacation,
     sick: row.sick,
-    field: row.field,
+    field: parseDecimal(row.field) > 0,
     job: row.job,
     description: row.details,
   };
@@ -84,11 +84,11 @@ export function getMockTimesheetWeek(monday: Date, weekOffset: number): Timeshee
     status: weekOffset < 0 ? 'submitted' : 'draft',
     days: DAY_KEYS.map((_, index) => createDay(monday, index, weekOffset)),
     totals: {
+      totalHours: '0.00',
       hours: '0.00',
       overtime: '0.00',
       vacation: '0.00',
       sick: '0.00',
-      field: '0.00',
       mobileTotal: '0h 00m',
     },
   };

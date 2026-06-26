@@ -34,20 +34,20 @@ function recalculateTotals(days: TimesheetDay[]): TimesheetTotals {
       acc.overtime += parseDecimal(day.entry.overtime);
       acc.vacation += parseDecimal(day.entry.vacation);
       acc.sick += parseDecimal(day.entry.sick);
-      acc.field += parseDecimal(day.entry.field);
       return acc;
     },
-    { hours: 0, overtime: 0, vacation: 0, sick: 0, field: 0 }
+    { hours: 0, overtime: 0, vacation: 0, sick: 0 }
   );
 
   const totalMinutes = Math.round((totals.hours + totals.overtime + totals.vacation + totals.sick) * 60);
+  const totalHours = totals.hours + totals.overtime + totals.vacation + totals.sick;
 
   return {
+    totalHours: formatDecimal(totalHours),
     hours: formatDecimal(totals.hours),
     overtime: formatDecimal(totals.overtime),
     vacation: formatDecimal(totals.vacation),
     sick: formatDecimal(totals.sick),
-    field: formatDecimal(totals.field),
     mobileTotal: formatMinutesToTimeLabel(totalMinutes),
   };
 }
@@ -74,7 +74,7 @@ export function createEmptyEntry(): TimesheetDayEntry {
     overtime: '0.00',
     vacation: '0.00',
     sick: '0.00',
-    field: '0.00',
+    field: false,
     job: '',
     description: '',
   };

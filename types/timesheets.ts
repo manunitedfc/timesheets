@@ -2,7 +2,7 @@ export type TimesheetDayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 's
 
 export type DayStatus = 'completed' | 'draft' | 'not-started';
 
-export type TimesheetDayField = 'hours' | 'overtime' | 'vacation' | 'sick' | 'field' | 'job' | 'description';
+export type TimesheetDayField = 'hours' | 'overtime' | 'vacation' | 'sick' | 'job' | 'description';
 
 export type TimesheetWeekStatus = 'draft' | 'submitted';
 
@@ -19,7 +19,7 @@ export type TimesheetDayEntry = {
   overtime: string;
   vacation: string;
   sick: string;
-  field: string;
+  field: boolean;
   job: string;
   description: string;
 };
@@ -43,11 +43,11 @@ export type TimesheetDay = {
 };
 
 export type TimesheetTotals = {
+  totalHours: string;
   hours: string;
   overtime: string;
   vacation: string;
   sick: string;
-  field: string;
   mobileTotal: string;
 };
 

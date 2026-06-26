@@ -16,12 +16,12 @@ export function formatMinutesToTimeLabel(totalMinutes: number): string {
 }
 
 export function getDayStatus(day: TimesheetDay, weekStatus: TimesheetWeekStatus = 'draft'): DayStatus {
-  if (parseTimeLabelToMinutes(day.totals.mobile) === 0) {
-    return 'not-started';
-  }
-
   if (weekStatus === 'submitted') {
     return 'completed';
+  }
+
+  if (parseTimeLabelToMinutes(day.totals.mobile) === 0) {
+    return 'not-started';
   }
 
   return day.key === 'fri' ? 'draft' : 'completed';
